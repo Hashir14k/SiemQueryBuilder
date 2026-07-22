@@ -1,4 +1,4 @@
-# SIEM Query Builder v1.5
+# SIEM Query Builder v1.9
 
 **Offline SIEM query builder for threat hunters, by a threat hunter.**
 
@@ -6,8 +6,8 @@ A lightweight, browser-based tool that generates native SIEM queries from IOCs �
 
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20offline-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![SIEMs](https://img.shields.io/badge/SIEMs-QRadar%20%7C%20Splunk%20%7C%20RSA%20NetWitness%20%7C%20Datadog%20%7C%20Wazuh-orange)
-![Version](https://img.shields.io/badge/version-1.7-informational)
+![SIEMs](https://img.shields.io/badge/SIEMs-QRadar%20%7C%20Splunk%20%7C%20RSA%20%7C%20Datadog%20%7C%20Wazuh%20%7C%20Sentinel%20%7C%20Elastic-orange)
+![Version](https://img.shields.io/badge/version-1.9-informational)
 ![PWA](https://img.shields.io/badge/PWA-ready-success)
 
 ## Features
@@ -16,13 +16,13 @@ A lightweight, browser-based tool that generates native SIEM queries from IOCs �
 - **Bulk IOC Mode** — Paste up to 200 IOCs (one per line) with auto-deduplication and generate queries in batches
 - **File Import** — Upload .txt or .csv files to auto-import IOCs (drag & drop or browse)
 - **Auto-Detect** — Automatically identifies IPs, domains, emails, SHA-1, SHA-256, and MD5 hashes
-- **Five SIEM Platforms** — IBM QRadar (AQL), Splunk (SPL), RSA NetWitness, Datadog SIEM, Wazuh
+- **Seven SIEM Platforms** — IBM QRadar (AQL), Splunk (SPL), RSA NetWitness, Datadog SIEM, Wazuh, Microsoft Sentinel (KQL), Elastic SIEM
 - **Chunked Combined Queries** — Batch IOCs into `IN` / `OR` grouped queries with configurable chunk sizes
 - **Per-IOC Validation** — Color-coded validation table shows which IOCs are valid/invalid/unknown
 - **Auto-Deduplication** — Case-insensitive duplicate detection skips repeated IOCs and reports the count
 - **Debounced Rendering** — Bulk input waits 300ms after typing before regenerating queries for smooth performance
 - **Individual + Combined Output** — Both individual per-IOC queries and chunked combined queries in one view
-- **Built-in Cheat Sheet** — In-page search query syntax reference for all 5 SIEM platforms with platform dropdown
+- **Built-in Cheat Sheet** — In-page search query syntax reference for all 7 SIEM platforms with platform dropdown
 - **Typewriter Animation** — "SIEM Query Builder" heading types itself out on every visit
 - **Dark / Light Mode** — Full black + light green dark theme (default), clean light theme
 - **PWA Support** — Installable on desktop and mobile for a native app experience
@@ -47,6 +47,8 @@ A lightweight, browser-based tool that generates native SIEM queries from IOCs �
 - **RSA NetWitness** — Native query syntax for packets, logs, and endpoint data
 - **Datadog SIEM** — Faceted log queries with `@attribute` syntax, service/source scoping
 - **Wazuh** — Lucene-based queries for Elasticsearch backend with rule level filtering
+- **Microsoft Sentinel** — KQL (Kusto Query Language) queries across Security, Signin, Audit, and Defender tables
+- **Elastic SIEM** — ECS-based queries with KQL/Lucene syntax for Elastic Security
 
 ## Documentation
 
@@ -69,7 +71,7 @@ Serving via HTTP enables the PWA install prompt and service worker caching.
 ### Quick Start
 1. **Select mode** — Single IOC or Bulk IOCs
 2. **Choose IOC type** — or leave on Auto-Detect
-3. **Pick SIEM platforms** — QRadar, Splunk, RSA NetWitness, Datadog SIEM, Wazuh (any combination)
+3. **Pick SIEM platforms** — QRadar, Splunk, RSA NetWitness, Datadog SIEM, Wazuh, Sentinel, Elastic (any combination)
 4. **Enter your IOC(s)** — type, paste, or upload a .txt/.csv file — queries generate in real-time
 5. **Copy and hunt** — click Copy buttons or press `Ctrl+Enter` to copy all
 6. **Cheat Sheet** — click the Cheat Sheet button in the header for search query syntax reference
@@ -86,7 +88,7 @@ As a threat hunter, you often work with sensitive IOCs from active investigation
 
 Pull requests are welcome. Areas for contribution:
 
-- Additional SIEM platforms (Sentinel, Elastic, ArcSight, etc.)
+- Additional SIEM platforms (ArcSight, Sumo Logic, Devo, etc.)
 - New IOC types (CVE, registry keys, file paths, etc.)
 - Query template improvements and optimization
 - Cheat Sheet expansions and additional hunting recipes

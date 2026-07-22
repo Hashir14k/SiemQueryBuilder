@@ -1,7 +1,7 @@
 {
   "name": "SIEM Query Builder",
   "short_name": "SIEM QB",
-  "description": "Offline SIEM query builder for threat hunters — QRadar, Splunk, RSA NetWitness, Datadog, Wazuh",
+  "description": "Offline SIEM query builder for threat hunters — QRadar, Splunk, RSA NetWitness, Datadog, Wazuh, Sentinel, Elastic",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "any",
