@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#000000">
-<meta name="description" content="Offline SIEM query builder for threat hunters — generate native queries for QRadar, Splunk, RSA NetWitness, Datadog, and Wazuh.">
+<meta name="description" content="Offline SIEM query builder for threat hunters — generate native queries for QRadar, Splunk, RSA NetWitness, Datadog, Wazuh, Microsoft Sentinel, and Elastic SIEM.">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='5' fill='%23000' stroke='%234ade80' stroke-width='1.5'/><text x='16' y='14' text-anchor='middle' font-family='Consolas,monospace' font-size='8' font-weight='bold' fill='%234ade80'>SIEM</text><text x='16' y='22' text-anchor='middle' font-family='Consolas,monospace' font-size='5.5' font-weight='bold' fill='%234ade80'>QB</text></svg>">
-<title>SIEM Query Builder — QRadar · Splunk · RSA NetWitness</title>
+<title>SIEM Query Builder — QRadar · Splunk · RSA NetWitness · Sentinel · Elastic</title>
 <style>
 :root {
   --bg: #f5f4fa;
@@ -134,7 +134,7 @@ body::after {
   width: 18ch;
 }
 
-/* Caret blink */
+
 @keyframes blink-caret {
   0%, 100% { border-color: var(--accent); }
   50% { border-color: transparent; }
@@ -293,6 +293,8 @@ body::after {
 .siem-logo.rsa { background: #4f46e5; color: #fff; }
 .siem-logo.dd  { background: #4338ca; color: #fff; }
 .siem-logo.wz  { background: #6366f1; color: #fff; }
+.siem-logo.st  { background: #0078d4; color: #fff; }
+.siem-logo.es  { background: #00bfb3; color: #000; }
 
 .ioc-input, .ioc-textarea {
   width: 100%;
@@ -489,11 +491,15 @@ body::after {
 .badge.rsa { background: #e0e7ff; color: #3730a3; }
 .badge.dd  { background: #e0e7ff; color: #3730a3; }
 .badge.wz  { background: #e0e7ff; color: #3730a3; }
+.badge.st  { background: #dbeafe; color: #1e40af; }
+.badge.es  { background: #ccfbf1; color: #0f766e; }
 [data-theme="dark"] .badge.qr  { background: #1a3a1a; color: #4ade80; }
 [data-theme="dark"] .badge.sp  { background: #1a3a1a; color: #4ade80; }
 [data-theme="dark"] .badge.rsa { background: #1a3a1a; color: #4ade80; }
 [data-theme="dark"] .badge.dd  { background: #1a3a1a; color: #4ade80; }
 [data-theme="dark"] .badge.wz  { background: #1a3a1a; color: #4ade80; }
+[data-theme="dark"] .badge.st  { background: #0a1a2e; color: #60a5fa; }
+[data-theme="dark"] .badge.es  { background: #0a2a2e; color: #2dd4bf; }
 
 .output-label .ioc-count {
   font-size: 0.68rem;
@@ -577,7 +583,7 @@ details.bulk-detail .detail-body {
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Cheat Sheet Page (in-page, not modal) */
+
 .cs-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -664,19 +670,173 @@ details.bulk-detail .detail-body {
   pre.query-box { font-size: 0.7rem; padding: 12px 36px 12px 10px; }
   .validation-table { font-size: 0.7rem; }
 }
+
+
+.cv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.cv-panel {
+  display: flex;
+  flex-direction: column;
+}
+.cv-label {
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+.cv-textarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--code-bg);
+  color: var(--code-text);
+  outline: none;
+  resize: vertical;
+  transition: all var(--transition);
+  line-height: 1.6;
+}
+.cv-textarea::placeholder {
+  color: var(--text2);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+}
+.cv-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+}
+.cv-detection-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.cv-detected-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cv-detected-platform {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  border: 1px solid var(--accent);
+}
+.cv-detected-platform.unknown {
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  color: var(--text2);
+  font-weight: 400;
+}
+.cv-override {
+  font-size: 0.72rem !important;
+  padding: 4px 8px !important;
+}
+.cv-target-select {
+  font-size: 0.9rem !important;
+  padding: 10px 14px !important;
+}
+.cv-extracted-section {
+  margin-top: 4px;
+}
+.cv-ioc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.cv-ioc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  border: 1px solid var(--accent);
+}
+.cv-ioc-chip .cv-type-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent);
+}
+.cv-convert-btn {
+  margin-top: 16px;
+  padding: 10px 24px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1.5px solid var(--accent);
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  cursor: pointer;
+  transition: all var(--transition);
+  align-self: flex-start;
+}
+.cv-convert-btn:hover {
+  background: var(--accent);
+  color: #000;
+}
+.cv-convert-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.cv-output-section {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.cv-output-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+.cv-output-meta .arrow {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+@media (max-width: 700px) {
+  .cv-grid { grid-template-columns: 1fr; }
+  .cv-textarea { min-height: 140px; }
+}
 </style>
 </head>
 <body>
 
 <div class="container">
 
-  
+
   <div class="header">
     <h1>SIEM Query Builder</h1>
     <div style="display:flex;align-items:center;gap:8px;">
       <button class="theme-btn" id="themeToggle" title="Toggle dark / light mode" aria-label="Toggle theme">
         <span id="themeLabel">Dark Mode</span>
       </button>
+      <button class="theme-btn" id="converterLink" title="Query Converter">Converter</button>
       <a class="theme-btn" id="cheatSheetLink" title="Open Cheat Sheet" style="text-decoration:none;">
         Cheat Sheet
       </a>
@@ -711,7 +871,7 @@ details.bulk-detail .detail-body {
     </div>
   </div>
 
-  
+
   <div class="card">
     <div class="card-title">Select SIEM Platform</div>
     <div class="siem-row" id="siemRow">
@@ -735,14 +895,22 @@ details.bulk-detail .detail-body {
         <input type="checkbox" id="siem-wazuh" value="wazuh">
         <label for="siem-wazuh">Wazuh</label>
       </div>
+      <div class="siem-chip">
+        <input type="checkbox" id="siem-sentinel" value="sentinel">
+        <label for="siem-sentinel">Microsoft Sentinel</label>
+      </div>
+      <div class="siem-chip">
+        <input type="checkbox" id="siem-elastic" value="elastic">
+        <label for="siem-elastic">Elastic SIEM</label>
+      </div>
     </div>
   </div>
 
-  
+
   <div class="card" id="inputCard">
     <div class="card-title" id="inputCardTitle">Add IOC Value</div>
 
-    
+
     <div id="singleInputWrapper">
       <input
         type="text" class="ioc-input" id="iocValue"
@@ -754,7 +922,7 @@ details.bulk-detail .detail-body {
       </div>
     </div>
 
-    
+
     <div id="bulkInputWrapper" class="hidden">
       <div class="upload-area" id="uploadArea">
         <input type="file" id="iocFileInput" accept=".txt,.csv,text/plain,text/csv">
@@ -779,7 +947,7 @@ details.bulk-detail .detail-body {
           <span class="stat-unknown hidden" id="statUnknown"><span id="statUnknownCount">0</span> unknown</span>
         </div>
       </div>
-      
+
       <div class="validation-scroll hidden" id="validationScroll">
         <table class="validation-table" id="validationTable">
           <thead><tr><th class="line-num">#</th><th>Value</th><th class="line-status">Status</th><th>Detected Type</th></tr></thead>
@@ -789,7 +957,7 @@ details.bulk-detail .detail-body {
     </div>
   </div>
 
-  
+
   <div class="card" id="outputCard">
     <div class="card-title">
       <span>Generated Queries</span>
@@ -809,11 +977,11 @@ details.bulk-detail .detail-body {
     Built by <strong>Hashir14k</strong> &mdash; offline SIEM query builder for hunters, by a hunter.
   </div>
 
-</div><!-- /mainPage -->
+</div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Cheat Sheet Page -->
+
 <div id="csPage" class="hidden">
   <div class="cs-card">
     <div class="card-title">
@@ -827,21 +995,83 @@ details.bulk-detail .detail-body {
         <option value="rsa">RSA NetWitness</option>
         <option value="datadog">Datadog SIEM</option>
         <option value="wazuh">Wazuh</option>
+        <option value="sentinel">Microsoft Sentinel (KQL)</option>
+        <option value="elastic">Elastic SIEM</option>
       </select>
     </div>
     <div id="csBody"></div>
   </div>
 </div>
 
-</div><!-- /container -->
+
+<div id="cvPage" class="hidden">
+  <div class="cs-card">
+    <div class="card-title">
+      <span>Query Converter</span>
+      <span style="font-weight:400;font-size:0.72rem;color:var(--text2);">Paste any SIEM query — convert to any other platform</span>
+    </div>
+
+    <div class="cv-grid">
+      <div class="cv-panel">
+        <div class="cv-label">Source Query</div>
+        <textarea class="cv-textarea" id="cvSourceQuery" placeholder="Paste a query from any SIEM platform here...&#10;&#10;e.g. SELECT * FROM events WHERE sourceip = '10.0.0.1'&#10;e.g. index=* src_ip=&quot;10.0.0.1&quot; | stats count by sourcetype&#10;e.g. search * | where SourceIP == '10.0.0.1'" autocomplete="off" spellcheck="false"></textarea>
+        <div class="cv-detection-row">
+          <span class="cv-detected-label">Detected:</span>
+          <span class="cv-detected-platform" id="cvDetectedPlatform">—</span>
+          <span style="font-size:0.72rem;color:var(--text2);margin-left:8px;">(override if wrong)</span>
+          <select class="cs-select cv-override" id="cvSourceOverride">
+            <option value="auto">Auto-Detect</option>
+            <option value="qradar">IBM QRadar (AQL)</option>
+            <option value="splunk">Splunk (SPL)</option>
+            <option value="rsa">RSA NetWitness</option>
+            <option value="datadog">Datadog SIEM</option>
+            <option value="wazuh">Wazuh</option>
+            <option value="sentinel">Microsoft Sentinel (KQL)</option>
+            <option value="elastic">Elastic SIEM</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cv-panel">
+        <div class="cv-label">Convert To</div>
+        <select class="cs-select cv-target-select" id="cvTargetPlatform">
+          <option value="">Select target platform...</option>
+          <option value="qradar">IBM QRadar (AQL)</option>
+          <option value="splunk">Splunk (SPL)</option>
+          <option value="rsa">RSA NetWitness</option>
+          <option value="datadog">Datadog SIEM</option>
+          <option value="wazuh">Wazuh</option>
+          <option value="sentinel">Microsoft Sentinel (KQL)</option>
+          <option value="elastic">Elastic SIEM</option>
+        </select>
+
+        <div class="cv-extracted-section" id="cvExtractedSection" style="display:none;">
+          <div class="cv-label" style="margin-top:14px;">Extracted Indicators</div>
+          <div id="cvExtractedIOCs" class="cv-ioc-chips"></div>
+        </div>
+
+        <button class="cv-convert-btn" id="cvConvertBtn">Convert Query</button>
+      </div>
+    </div>
+
+    <div class="cv-output-section" id="cvOutputSection" style="display:none;">
+      <div class="card-title">
+        <span>Converted Query</span>
+      </div>
+      <div id="cvOutputContainer"></div>
+    </div>
+  </div>
+</div>
+
+</div>
 
 <script>
 (function () {
   'use strict';
 
-  
+
   const iocRadios     = document.querySelectorAll('input[name="ioc"]');
-  const siemBoxes     = ['siem-qradar','siem-splunk','siem-rsa','siem-datadog','siem-wazuh'].map(id => document.getElementById(id));
+  const siemBoxes     = ['siem-qradar','siem-splunk','siem-rsa','siem-datadog','siem-wazuh','siem-sentinel','siem-elastic'].map(id => document.getElementById(id));
   const iocValueEl    = document.getElementById('iocValue');
   const iocBulkEl     = document.getElementById('iocBulkValue');
   const hintEl        = document.getElementById('validationHint');
@@ -868,14 +1098,14 @@ details.bulk-detail .detail-body {
   const iocTypeNote   = document.getElementById('iocTypeNote');
   const inputCardTitle = document.getElementById('inputCardTitle');
 
-  
+
   let currentMode   = 'single';
   let currentIOC    = 'auto';
   let currentValue  = '';
   let toastTimer    = null;
   let lastBulkLines = [];
 
-  
+
 
   const IOC_PATTERNS = [
     { type: 'sha256', rx: /^[a-fA-F0-9]{64}$/,              label: 'SHA-256 (64 hex)' },
@@ -900,7 +1130,7 @@ details.bulk-detail .detail-body {
     return detectIOCType(value) || 'unknown';
   }
 
-  
+
   const VALIDATORS = {
     ip:     { rx: /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/,  label: 'e.g. 192.168.1.100 or 10.0.0.0/24' },
     email:  { rx: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,             label: 'e.g. user@example.com' },
@@ -920,7 +1150,7 @@ details.bulk-detail .detail-body {
     return { ok: true, msg: '', sanitized: v, detectedType: type };
   }
 
-  
+
 
   const SINGLE_TEMPLATES = {
     ip: {
@@ -942,6 +1172,15 @@ details.bulk-detail .detail-body {
         `data.srcip:${v} OR data.dstip:${v} OR srcip:${v} OR dstip:${v}\n` +
         `-- Rule-based hunt\nrule.level>=10 AND (data.srcip:${v} OR data.dstip:${v})\n` +
         `-- Firewall / IDS scope\nlocation:firewall AND (srcip:${v} OR dstip:${v})`,
+      sentinel: v =>
+        `search * | where SourceIP == '${v}' or DestinationIP == '${v}' or ClientIP == '${v}'\n` +
+        `-- Specific tables\nCommonSecurityLog | where SourceIP == '${v}' or DestinationIP == '${v}'\n` +
+        `SigninLogs | where IPAddress == '${v}'\n` +
+        `DeviceNetworkEvents | where RemoteIP == '${v}'`,
+      elastic: v =>
+        `source.ip: "${v}" OR destination.ip: "${v}" OR client.ip: "${v}"\n` +
+        `-- Network scope\nsource.ip: "${v}" AND event.category: "network"\n` +
+        `-- Firewall scope\nevent.dataset: "firewall" AND (source.ip: "${v}" OR destination.ip: "${v}")`,
     },
     email: {
       qradar: v =>
@@ -962,6 +1201,15 @@ details.bulk-detail .detail-body {
         `data.email:*${v}* OR email:*${v}* OR mail.from:*${v}* OR mail.to:*${v}*\n` +
         `-- High-priority mail alerts\nrule.level>=10 AND (data.email:*${v}* OR email:*${v}*)\n` +
         `-- MTA / Exchange scope\nlocation:mail AND (mail.from:*${v}* OR mail.to:*${v}*)`,
+      sentinel: v =>
+        `search * | where UserPrincipalName contains '${v}' or MailFrom == '${v}' or MailTo == '${v}'\n` +
+        `-- Office & email tables\nOfficeActivity | where UserId == '${v}'\n` +
+        `EmailEvents | where SenderMailFromDomain == '${v}' or RecipientEmailAddress == '${v}'\n` +
+        `SecurityAlert | where Entities contains '${v}'`,
+      elastic: v =>
+        `email.sender.address: "${v}" OR email.to.address: "${v}"\n` +
+        `-- Email events\nemail.sender.address: "${v}" AND event.category: "email"\n` +
+        `-- Mail scope\nevent.dataset: "email" AND (email.sender.address: "${v}" OR email.to.address: "${v}")`,
     },
     domain: {
       qradar: v => {
@@ -984,6 +1232,17 @@ details.bulk-detail .detail-body {
         `data.url:*${v}* OR data.domain:${v} OR url:*${v}* OR domain:${v} OR hostname:${v}\n` +
         `-- DNS / Proxy scope\nrule.level>=8 AND (data.url:*${v}* OR data.domain:${v})\n` +
         `-- Web server logs\nlocation:web AND (url:*${v}* OR hostname:${v})`,
+      sentinel: v => {
+        const esc = v.replace(/'/g, "''");
+        return `search * | where RemoteUrl contains '${esc}' or RemoteDomain == '${esc}'\n` +
+               `-- Network & DNS tables\nCommonSecurityLog | where RemoteUrl contains '${esc}'\n` +
+               `DeviceNetworkEvents | where RemoteUrl contains '${esc}'\n` +
+               `DnsEvents | where Name contains '${esc}'`;
+      },
+      elastic: v =>
+        `url.domain: "${v}" OR dns.question.name: "${v}" OR destination.domain: "${v}"\n` +
+        `-- DNS scope\ndns.question.name: "${v}" AND event.category: "dns"\n` +
+        `-- Web/proxy scope\nurl.domain: "${v}" AND event.category: "web"`,
     },
     sha1: {
       qradar: v =>
@@ -1004,6 +1263,15 @@ details.bulk-detail .detail-body {
         `file.hash:${v} OR hash:${v} OR sha1:${v}\n` +
         `-- FIM / Malware detection\nrule.level>=12 AND (file.hash:${v} OR hash:${v})\n` +
         `-- Syscheck / Integrity\nlocation:syscheck AND sha1:${v}`,
+      sentinel: v =>
+        `search * | where SHA1 == '${v}' or FileHash == '${v}'\n` +
+        `-- Endpoint tables\nDeviceFileEvents | where SHA1 == '${v}'\n` +
+        `SecurityEvent | where FileHash == '${v}'\n` +
+        `DeviceProcessEvents | where SHA1 == '${v}'`,
+      elastic: v =>
+        `file.hash.sha1: "${v}" OR process.hash.sha1: "${v}"\n` +
+        `-- Endpoint scope\nfile.hash.sha1: "${v}" AND event.category: "malware"\n` +
+        `-- Process scope\nprocess.hash.sha1: "${v}" AND event.category: "process"`,
     },
     sha256: {
       qradar: v =>
@@ -1024,6 +1292,15 @@ details.bulk-detail .detail-body {
         `file.hash:${v} OR hash:${v} OR sha256:${v}\n` +
         `-- FIM / Malware detection\nrule.level>=12 AND (file.hash:${v} OR hash:${v})\n` +
         `-- Syscheck / Integrity\nlocation:syscheck AND sha256:${v}`,
+      sentinel: v =>
+        `search * | where SHA256 == '${v}' or FileHash == '${v}'\n` +
+        `-- Endpoint tables\nDeviceFileEvents | where SHA256 == '${v}'\n` +
+        `DeviceProcessEvents | where SHA256 == '${v}'\n` +
+        `SecurityAlert | where Entities contains '${v}'`,
+      elastic: v =>
+        `file.hash.sha256: "${v}" OR process.hash.sha256: "${v}"\n` +
+        `-- Endpoint scope\nfile.hash.sha256: "${v}" AND event.category: "malware"\n` +
+        `-- Process scope\nprocess.hash.sha256: "${v}" AND event.category: "process"`,
     },
     md5: {
       qradar: v =>
@@ -1044,10 +1321,18 @@ details.bulk-detail .detail-body {
         `file.hash:${v} OR hash:${v} OR md5:${v}\n` +
         `-- FIM / Malware detection\nrule.level>=12 AND (file.hash:${v} OR hash:${v})\n` +
         `-- Syscheck / Integrity\nlocation:syscheck AND md5:${v}`,
+      sentinel: v =>
+        `search * | where MD5 == '${v}' or FileHash == '${v}'\n` +
+        `-- Endpoint tables\nDeviceFileEvents | where MD5 == '${v}'\n` +
+        `DeviceProcessEvents | where MD5 == '${v}'\n` +
+        `SecurityAlert | where Entities contains '${v}'`,
+      elastic: v =>
+        `file.hash.md5: "${v}" OR process.hash.md5: "${v}"\n` +
+        `-- Endpoint scope\nfile.hash.md5: "${v}" AND event.category: "malware"\n` +
+        `-- Process scope\nprocess.hash.md5: "${v}" AND event.category: "process"`,
     },
   };
 
-  
 
   function quoteList(arr)  { return arr.map(v => `'${v}'`).join(', '); }
   function dqList(arr)     { return arr.map(v => `"${v}"`).join(', '); }
@@ -1075,6 +1360,12 @@ details.bulk-detail .detail-body {
       wazuh: arr =>
         `(${arr.map(v => `data.srcip:${v} OR data.dstip:${v} OR srcip:${v} OR dstip:${v}`).join(') OR (')})\n` +
         `rule.level>=10 AND (${arr.map(v => `data.srcip:${v} OR data.dstip:${v}`).join(' OR ')})`,
+      sentinel: arr =>
+        `search * | where ${arr.map(v => `SourceIP == '${v}' or DestinationIP == '${v}'`).join(' or ')}\n` +
+        `CommonSecurityLog | where SourceIP in (${quoteList(arr)}) or DestinationIP in (${quoteList(arr)})`,
+      elastic: arr =>
+        `(${arr.map(v => `source.ip: "${v}" OR destination.ip: "${v}" OR client.ip: "${v}"`).join(') OR (')})\n` +
+        `event.category: "network" AND (${arr.map(v => `source.ip: "${v}" OR destination.ip: "${v}"`).join(' OR ')})`,
     },
     email: {
       qradar: arr =>
@@ -1092,6 +1383,12 @@ details.bulk-detail .detail-body {
       wazuh: arr =>
         `(${arr.map(v => `data.email:*${v}* OR email:*${v}* OR mail.from:*${v}* OR mail.to:*${v}*`).join(') OR (')})\n` +
         `rule.level>=10 AND (${arr.map(v => `data.email:*${v}* OR email:*${v}*`).join(' OR ')})`,
+      sentinel: arr =>
+        `search * | where ${arr.map(v => `UserPrincipalName contains '${v}' or MailFrom == '${v}' or MailTo == '${v}'`).join(' or ')}\n` +
+        `EmailEvents | where SenderMailFromDomain in (${quoteList(arr)}) or RecipientEmailAddress in (${quoteList(arr)})`,
+      elastic: arr =>
+        `(${arr.map(v => `email.sender.address: "${v}" OR email.to.address: "${v}"`).join(') OR (')})\n` +
+        `event.category: "email" AND (${arr.map(v => `email.sender.address: "${v}" OR email.to.address: "${v}"`).join(' OR ')})`,
     },
     domain: {
       qradar: arr => {
@@ -1110,6 +1407,15 @@ details.bulk-detail .detail-body {
       wazuh: arr =>
         `(${arr.map(v => `data.url:*${v}* OR data.domain:${v} OR url:*${v}* OR domain:${v}`).join(') OR (')})\n` +
         `rule.level>=8 AND (${arr.map(v => `data.url:*${v}* OR data.domain:${v}`).join(' OR ')})`,
+      sentinel: arr => {
+        const esc = arr.map(v => v.replace(/'/g, "''"));
+        return `search * | where ${esc.map(v => `RemoteUrl contains '${v}' or RemoteDomain == '${v}'`).join(' or ')}\n` +
+               `CommonSecurityLog | where ${esc.map(v => `RemoteUrl contains '${v}'`).join(' or ')}\n` +
+               `DnsEvents | where Name in (${quoteList(esc)})`;
+      },
+      elastic: arr =>
+        `(${arr.map(v => `url.domain: "${v}" OR dns.question.name: "${v}" OR destination.domain: "${v}"`).join(') OR (')})\n` +
+        `event.category: "dns" AND (${arr.map(v => `dns.question.name: "${v}"`).join(' OR ')})`,
     },
     sha1: {
       qradar: arr =>
@@ -1126,6 +1432,13 @@ details.bulk-detail .detail-body {
       wazuh: arr =>
         `file.hash IN (${quoteList(arr)}) OR hash IN (${quoteList(arr)}) OR sha1 IN (${quoteList(arr)})\n` +
         `rule.level>=12 AND (file.hash IN (${quoteList(arr)}) OR hash IN (${quoteList(arr)}))`,
+      sentinel: arr =>
+        `search * | where SHA1 in (${quoteList(arr)}) or FileHash in (${quoteList(arr)})\n` +
+        `DeviceFileEvents | where SHA1 in (${quoteList(arr)})\n` +
+        `DeviceProcessEvents | where SHA1 in (${quoteList(arr)})`,
+      elastic: arr =>
+        `file.hash.sha1 IN (${dqList(arr)}) OR process.hash.sha1 IN (${dqList(arr)})\n` +
+        `event.category: "malware" AND (file.hash.sha1 IN (${dqList(arr)}) OR process.hash.sha1 IN (${dqList(arr)}))`,
     },
     sha256: {
       qradar: arr =>
@@ -1142,6 +1455,13 @@ details.bulk-detail .detail-body {
       wazuh: arr =>
         `file.hash IN (${quoteList(arr)}) OR hash IN (${quoteList(arr)}) OR sha256 IN (${quoteList(arr)})\n` +
         `rule.level>=12 AND (file.hash IN (${quoteList(arr)}) OR hash IN (${quoteList(arr)}))`,
+      sentinel: arr =>
+        `search * | where SHA256 in (${quoteList(arr)}) or FileHash in (${quoteList(arr)})\n` +
+        `DeviceFileEvents | where SHA256 in (${quoteList(arr)})\n` +
+        `DeviceProcessEvents | where SHA256 in (${quoteList(arr)})`,
+      elastic: arr =>
+        `file.hash.sha256 IN (${dqList(arr)}) OR process.hash.sha256 IN (${dqList(arr)})\n` +
+        `event.category: "malware" AND (file.hash.sha256 IN (${dqList(arr)}) OR process.hash.sha256 IN (${dqList(arr)}))`,
     },
     md5: {
       qradar: arr =>
@@ -1158,12 +1478,19 @@ details.bulk-detail .detail-body {
       wazuh: arr =>
         `file.hash IN (${quoteList(arr)}) OR hash IN (${quoteList(arr)}) OR md5 IN (${quoteList(arr)})\n` +
         `rule.level>=12 AND (file.hash IN (${quoteList(arr)}) OR hash IN (${quoteList(arr)}))`,
+      sentinel: arr =>
+        `search * | where MD5 in (${quoteList(arr)}) or FileHash in (${quoteList(arr)})\n` +
+        `DeviceFileEvents | where MD5 in (${quoteList(arr)})\n` +
+        `DeviceProcessEvents | where MD5 in (${quoteList(arr)})`,
+      elastic: arr =>
+        `file.hash.md5 IN (${dqList(arr)}) OR process.hash.md5 IN (${dqList(arr)})\n` +
+        `event.category: "malware" AND (file.hash.md5 IN (${dqList(arr)}) OR process.hash.md5 IN (${dqList(arr)}))`,
     },
   };
 
   const DEFAULT_CHUNK_SIZE = 10;
 
-  
+
 
   function escapeHTML(str) {
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -1174,7 +1501,7 @@ details.bulk-detail .detail-body {
     return siemBoxes.filter(cb => cb.checked).map(cb => cb.value);
   }
 
-  
+
 
   function parseBulkLines(raw) {
     const lines = raw.split(/\r?\n/);
@@ -1202,7 +1529,7 @@ details.bulk-detail .detail-body {
     return { results: results, dupes: dupes };
   }
 
-  
+
 
   function render() {
     if (currentMode === 'single') {
@@ -1212,12 +1539,12 @@ details.bulk-detail .detail-body {
     }
   }
 
-  
+
   function renderSingle() {
     const siems = getSelectedSIEMs();
     const val   = validateIOC(currentIOC === 'auto' ? detectIOCType(iocValueEl.value) || 'unknown' : currentIOC, iocValueEl.value);
 
-    
+
     if (currentIOC !== 'auto' && val.ok) {
       hintEl.innerHTML = 'Ready &mdash; pick at least one SIEM below.';
       hintEl.style.color = '';
@@ -1241,7 +1568,7 @@ details.bulk-detail .detail-body {
       }
     }
 
-    
+
     const effectiveType = currentIOC === 'auto' ? (detectIOCType(iocValueEl.value) || 'unknown') : currentIOC;
     const effectiveVal  = validateIOC(effectiveType, iocValueEl.value);
 
@@ -1256,8 +1583,8 @@ details.bulk-detail .detail-body {
     }
 
     const sanitized = effectiveVal.sanitized;
-    const siemNames = { qradar: 'QRadar', splunk: 'Splunk', rsa: 'RSA NetWitness', datadog: 'Datadog SIEM', wazuh: 'Wazuh' };
-    const siemBadge = { qradar: 'qr', splunk: 'sp', rsa: 'rsa', datadog: 'dd', wazuh: 'wz' };
+    const siemNames = { qradar: 'QRadar', splunk: 'Splunk', rsa: 'RSA NetWitness', datadog: 'Datadog SIEM', wazuh: 'Wazuh', sentinel: 'Sentinel', elastic: 'Elastic SIEM' };
+    const siemBadge = { qradar: 'qr', splunk: 'sp', rsa: 'rsa', datadog: 'dd', wazuh: 'wz', sentinel: 'st', elastic: 'es' };
 
     let html = '';
     for (const siem of siems) {
@@ -1275,7 +1602,7 @@ details.bulk-detail .detail-body {
     attachCopyHandlers();
   }
 
-  
+
   function renderBulk() {
     const raw = iocBulkEl.value;
     const parsed = parseBulkLines(raw);
@@ -1288,7 +1615,7 @@ details.bulk-detail .detail-body {
     bulkCounter.textContent = `${cnt} / 200`;
     bulkCounter.className = 'bulk-counter' + (cnt > 200 ? ' over' : '');
 
-    
+
     const validOnes   = lines.filter(l => l.valid);
     const invalidOnes = lines.filter(l => !l.valid && l.effectiveType !== 'unknown');
     const unknownOnes = lines.filter(l => l.effectiveType === 'unknown');
@@ -1300,7 +1627,7 @@ details.bulk-detail .detail-body {
     statInvalid.classList.toggle('hidden', invalidOnes.length === 0);
     statUnknown.classList.toggle('hidden', unknownOnes.length === 0);
 
-    
+
     if (cnt === 0) {
       bulkHint.textContent = 'Paste one IOC per line.';
     } else if (cnt > 200) {
@@ -1312,7 +1639,7 @@ details.bulk-detail .detail-body {
       bulkHint.style.color = '';
     }
 
-    
+
     if (lines.length > 0) {
       validScroll.classList.remove('hidden');
       let tbody = '';
@@ -1334,7 +1661,7 @@ details.bulk-detail .detail-body {
       validScroll.classList.add('hidden');
     }
 
-    
+
     const siems = getSelectedSIEMs();
     const grouped = {};
     for (const l of lines) {
@@ -1343,8 +1670,8 @@ details.bulk-detail .detail-body {
       grouped[l.effectiveType].push(l.text);
     }
 
-    const siemNames  = { qradar: 'QRadar', splunk: 'Splunk', rsa: 'RSA NetWitness', datadog: 'Datadog SIEM', wazuh: 'Wazuh' };
-    const siemBadge  = { qradar: 'qr', splunk: 'sp', rsa: 'rsa', datadog: 'dd', wazuh: 'wz' };
+    const siemNames  = { qradar: 'QRadar', splunk: 'Splunk', rsa: 'RSA NetWitness', datadog: 'Datadog SIEM', wazuh: 'Wazuh', sentinel: 'Sentinel', elastic: 'Elastic SIEM' };
+    const siemBadge  = { qradar: 'qr', splunk: 'sp', rsa: 'rsa', datadog: 'dd', wazuh: 'wz', sentinel: 'st', elastic: 'es' };
     const typeNames  = { ip: 'IP', email: 'Email', domain: 'Domain/URL', sha1: 'SHA-1', sha256: 'SHA-256', md5: 'MD5' };
 
     if (Object.keys(grouped).length === 0 || siems.length === 0) {
@@ -1358,7 +1685,7 @@ details.bulk-detail .detail-body {
 
     let html = '';
 
-    
+
     const totalValid = validOnes.length;
     html +=
       `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:0.78rem;">` +
@@ -1371,7 +1698,7 @@ details.bulk-detail .detail-body {
       `</span>` +
       `</div>`;
 
-    
+
     html +=
       `<div style="margin-bottom:6px;font-weight:700;font-size:0.82rem;color:var(--text);display:flex;align-items:center;gap:6px;">` +
       `Individual Queries <span style="font-weight:400;font-size:0.72rem;color:var(--text2);">&mdash; one query per IOC, organized by SIEM</span>` +
@@ -1404,7 +1731,7 @@ details.bulk-detail .detail-body {
       html += `</div></details>`;
     }
 
-    
+
     html +=
       `<div style="margin:20px 0 6px;font-weight:700;font-size:0.82rem;color:var(--text);display:flex;align-items:center;gap:6px;">` +
       `Chunked Combined Queries <span style="font-weight:400;font-size:0.72rem;color:var(--text2);">&mdash; IN / OR batched queries (editable chunk size above)</span>` +
@@ -1444,7 +1771,7 @@ details.bulk-detail .detail-body {
     outputCtr.innerHTML = html;
     attachCopyHandlers();
 
-    
+
     const chunkSelect = document.getElementById('chunkSizeSelect');
     if (chunkSelect) {
       chunkSelect.addEventListener('change', function () {
@@ -1481,7 +1808,7 @@ details.bulk-detail .detail-body {
     }
   }
 
-  
+
   function attachCopyHandlers() {
     outputCtr.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', function () {
@@ -1491,7 +1818,7 @@ details.bulk-detail .detail-body {
     });
   }
 
-  
+
 
   function copyToClipboard(text, btnEl) {
     try {
@@ -1522,7 +1849,7 @@ details.bulk-detail .detail-body {
     showToast('Query copied to clipboard');
   }
 
-  
+
   function safeStorage(method, key, value) {
     try {
       if (method === 'get') return localStorage.getItem(key);
@@ -1538,7 +1865,7 @@ details.bulk-detail .detail-body {
     toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
   }
 
-  
+
 
   function applyTheme(dark) {
     htmlEl.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -1562,15 +1889,15 @@ details.bulk-detail .detail-body {
     });
   })();
 
-  /* --- Typewriter animation (continuous loop) --- */
+
   (function initTypewriter() {
     var h1 = document.querySelector('.header h1');
     if (!h1) return;
     var fullText = h1.textContent;
     var i = 0;
-    var typingSpeed = 90;   // ms per character
-    var pauseAfter = 2000;  // pause after typing complete
-    var pauseBefore = 600;  // pause before starting next cycle
+    var typingSpeed = 90;
+    var pauseAfter = 2000;
+    var pauseBefore = 600;
 
     function typeChar() {
       if (i <= fullText.length) {
@@ -1578,7 +1905,7 @@ details.bulk-detail .detail-body {
         i++;
         setTimeout(typeChar, typingSpeed);
       } else {
-        // Full text shown — pause, then clear and restart
+
         setTimeout(function() {
           h1.textContent = '';
           i = 0;
@@ -1591,11 +1918,11 @@ details.bulk-detail .detail-body {
     typeChar();
   })();
 
-  
+
 
   themeBtn.addEventListener('click', toggleTheme);
 
-  
+
   modeTabs.forEach(tab => {
     tab.addEventListener('click', function () {
       modeTabs.forEach(t => t.classList.remove('active'));
@@ -1617,33 +1944,33 @@ details.bulk-detail .detail-body {
     });
   });
 
-  
+
   iocRadios.forEach(r => r.addEventListener('change', function () {
     currentIOC = this.value;
     render();
   }));
 
-  
+
   document.getElementById('ioc-auto').checked = true;
   currentIOC = 'auto';
 
-  
+
   siemBoxes.forEach(cb => cb.addEventListener('change', render));
 
-  
+
   iocValueEl.addEventListener('input', function () {
     currentValue = this.value;
     render();
   });
 
-  
+
   var bulkDebounceTimer = null;
   iocBulkEl.addEventListener('input', function () {
     clearTimeout(bulkDebounceTimer);
     bulkDebounceTimer = setTimeout(render, 300);
   });
 
-  
+
   const uploadArea   = document.getElementById('uploadArea');
   const fileInput    = document.getElementById('iocFileInput');
   const fileNameEl   = document.getElementById('fileName');
@@ -1656,7 +1983,7 @@ details.bulk-detail .detail-body {
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
-      
+
       const parts = trimmed.split(',').map(p => p.trim().replace(/^["']|["']$/g, ''));
       const firstVal = parts.find(p => p.length > 0);
       if (firstVal) iocs.push(firstVal);
@@ -1680,16 +2007,16 @@ details.bulk-detail .detail-body {
       } else {
         iocs = parseTXT(text);
       }
-      
+
       const capped = iocs.slice(0, 200);
       iocBulkEl.value = capped.join('\n');
-      
+
       fileNameEl.textContent = file.name;
       fileNameEl.classList.remove('hidden');
       uploadHint.classList.add('hidden');
       uploadClear.classList.remove('hidden');
       uploadArea.classList.add('dragover');
-      
+
       if (currentMode !== 'bulk') {
         modeTabs.forEach(t => t.classList.remove('active'));
         const bulkTab = document.querySelector('.mode-tab[data-mode="bulk"]');
@@ -1712,7 +2039,7 @@ details.bulk-detail .detail-body {
     }
   });
 
-  
+
   uploadArea.addEventListener('dragover', function (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -1736,14 +2063,14 @@ details.bulk-detail .detail-body {
     }
   });
 
-  
+
   uploadArea.addEventListener('click', function (e) {
     if (e.target !== fileInput && e.target !== uploadClear) {
       fileInput.click();
     }
   });
 
-  
+
   uploadClear.addEventListener('click', function (e) {
     e.stopPropagation();
     fileInput.value = '';
@@ -1757,7 +2084,7 @@ details.bulk-detail .detail-body {
     showToast('File cleared');
   });
 
-  
+
   copyAllBtn.addEventListener('click', function () {
     const allQueries = [...outputCtr.querySelectorAll('.copy-btn')].map(b => b.getAttribute('data-query')).join('\n\n');
     if (allQueries) {
@@ -1767,7 +2094,7 @@ details.bulk-detail .detail-body {
     }
   });
 
-  
+
   document.addEventListener('keydown', function (e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -1776,10 +2103,10 @@ details.bulk-detail .detail-body {
     }
   });
 
-  
+
   render();
 
-  /* --- Cheat Sheet Page --- */
+
   var mainPage  = document.getElementById('mainPage');
   var csPage    = document.getElementById('csPage');
   var csBody    = document.getElementById('csBody');
@@ -1814,7 +2141,7 @@ details.bulk-detail .detail-body {
 
   var CHEATS = {};
 
-  /* --- QRadar --- */
+
   CHEATS.qradar = function(){
     var h = '';
     h += csSection('Basic AQL Structure', csBlock('SELECT <fields> FROM events\nWHERE <condition>\nLAST <N> DAYS/HOURS/MINUTES'));
@@ -1890,7 +2217,7 @@ details.bulk-detail .detail-body {
     return h;
   };
 
-  /* --- Splunk --- */
+
   CHEATS.splunk = function(){
     var h = '';
     h += csSection('Search Basics',
@@ -1970,7 +2297,7 @@ details.bulk-detail .detail-body {
     return h;
   };
 
-  /* --- RSA NetWitness --- */
+
   CHEATS.rsa = function(){
     var h = '';
     h += csSection('Query Syntax Basics',
@@ -2010,7 +2337,7 @@ details.bulk-detail .detail-body {
     return h;
   };
 
-  /* --- Datadog SIEM --- */
+
   CHEATS.datadog = function(){
     var h = '';
     h += csSection('Search Syntax',
@@ -2051,7 +2378,7 @@ details.bulk-detail .detail-body {
     return h;
   };
 
-  /* --- Wazuh --- */
+
   CHEATS.wazuh = function(){
     var h = '';
     h += csSection('Lucene Query Syntax',
@@ -2108,6 +2435,164 @@ details.bulk-detail .detail-body {
     return h;
   };
 
+
+  CHEATS.sentinel = function(){
+    var h = '';
+    h += csSection('Basic KQL Structure',
+      csBlock('table_name\n| where Condition\n| project Field1, Field2\n| summarize count() by Field\n| order by count_ desc\n| take 100'));
+    h += csSection('Key Tables for Threat Hunting',
+      csTable(['Table','Use'], [
+        ['<code>CommonSecurityLog</code>','Firewall, IDS/IPS, proxy logs'],
+        ['<code>SigninLogs</code>','User sign-in events (Azure AD)'],
+        ['<code>AuditLogs</code>','Azure AD audit records'],
+        ['<code>SecurityEvent</code>','Windows security events (Event ID 4688, 4624, 4625)'],
+        ['<code>DeviceNetworkEvents</code>','MDE network connections'],
+        ['<code>DeviceFileEvents</code>','MDE file create/modify/delete'],
+        ['<code>DeviceProcessEvents</code>','MDE process creation'],
+        ['<code>DeviceImageLoadEvents</code>','MDE DLL loads'],
+        ['<code>DeviceRegistryEvents</code>','MDE registry operations'],
+        ['<code>EmailEvents</code>','Exchange / MDO email events'],
+        ['<code>DnsEvents</code>','DNS query logs'],
+        ['<code>SecurityAlert</code>','Security alerts (Azure Defender, MDE)'],
+        ['<code>OfficeActivity</code>','Office 365 admin/user activity'],
+        ['<code>IdentityQueryEvents</code>','MDE identity queries (AD)']
+      ]));
+    h += csSection('Comparison Operators',
+      csTable(['Operator','Meaning','Example'], [
+        ['<code>==</code>','Equals','<code>SourceIP == \'10.0.0.1\'</code>'],
+        ['<code>!=</code>','Not equals','<code>EventID != 4688</code>'],
+        ['<code>&gt;</code> / <code>&gt;=</code>','Greater than / or equal','<code>Count &gt;= 10</code>'],
+        ['<code>&lt;</code> / <code>&lt;=</code>','Less than / or equal','<code>TimeGenerated &lt; ago(1h)</code>'],
+        ['<code>in (v1, v2, ...)</code>','Value in list','<code>SourceIP in (\'10.0.0.1\',\'10.0.0.2\')</code>'],
+        ['<code>!in (v1, v2, ...)</code>','Value NOT in list','<code>EventID !in (4688, 4624)</code>'],
+        ['<code>between (a .. b)</code>','Range match (inclusive)','<code>TimeGenerated between (datetime(2026-07-01) .. datetime(2026-07-21))</code>'],
+        ['<code>and</code> / <code>or</code>','Logical operators','<code>EventID == 4624 and LogonType == 10</code>'],
+        ['<code>not()</code>','Negate','<code>not(SourceIP startswith \'10.\')</code>']
+      ]));
+    h += csSection('String Operators',
+      csTable(['Operator','Description','Example'], [
+        ['<code>contains</code>','Substring match (case-insensitive)','<code>ProcessCommandLine contains \'powershell\'</code>'],
+        ['<code>!contains</code>','Does not contain','<code>UserAgent !contains \'Chrome\'</code>'],
+        ['<code>startswith</code>','Prefix match','<code>SourceIP startswith \'192.168.\'</code>'],
+        ['<code>endswith</code>','Suffix match','<code>FileName endswith \'.exe\'</code>'],
+        ['<code>has</code>','Whole-word match','<code>ProcessCommandLine has \'-enc\'</code>'],
+        ['<code>matches regex</code>','Regex match','<code>Url matches regex \'.*\\\\\\\\.exe$\'</code>'],
+        ['<code>=~</code>','Case-insensitive equals','<code>UserName =~ \'admin\'</code>']
+      ]));
+    h += csSection('Time Filters',
+      csTable(['Syntax','Meaning'], [
+        ['<code>ago(1h)</code> / <code>ago(24h)</code>','Relative time — 1 hour / 24 hours ago'],
+        ['<code>ago(7d)</code> / <code>ago(30d)</code>','Relative time — 7 / 30 days ago'],
+        ['<code>between (ago(7d) .. ago(1h))</code>','Time range between two offsets'],
+        ['<code>between (datetime(...) .. datetime(...))</code>','Absolute time range'],
+        ['<code>now()</code>','Current UTC time'],
+        ['<code>startofday(ago(1d))</code>','Start of yesterday'],
+        ['<code>endofday(now())</code>','End of today']
+      ]));
+    h += csSection('Projection & Extension',
+      csTable(['Operator','Purpose','Example'], [
+        ['<code>project</code>','Select columns','<code>project TimeGenerated, SourceIP, EventID</code>'],
+        ['<code>project-away</code>','Remove columns','<code>project-away TenantId, Type</code>'],
+        ['<code>project-rename</code>','Rename columns','<code>project-rename SrcIP=SourceIP</code>'],
+        ['<code>extend</code>','Add computed column','<code>extend RiskScore = Count * Severity</code>'],
+        ['<code>take N</code>','Limit rows','<code>take 100</code>'],
+        ['<code>sort by</code>','Sort (asc default, desc)','<code>sort by TimeGenerated desc</code>'],
+        ['<code>top N by</code>','Top N sorted','<code>top 20 by Count desc</code>']
+      ]));
+    h += csSection('Aggregation',
+      csTable(['Function','Returns'], [
+        ['<code>count()</code>','Row count'],
+        ['<code>dcount(Field)</code>','Distinct count'],
+        ['<code>sum(Field)</code>','Sum'],
+        ['<code>avg(Field)</code>','Average'],
+        ['<code>min(Field)</code> / <code>max(Field)</code>','Min / max'],
+        ['<code>make_list(Field, N)</code>','Collect up to N values into array'],
+        ['<code>make_set(Field, N)</code>','Collect distinct values into array'],
+        ['<code>arg_max(Field, *)</code>','Row with max value'],
+        ['<code>percentile(Field, N)</code>','Percentile (e.g. 95)'],
+        ['<code>bin(Field, timespan)</code>','Bucket values','bin(TimeGenerated, 1h)']
+      ]));
+    h += csSection('Joins',
+      csTable(['Join Kind','Description'], [
+        ['<code>inner</code>','Only matching rows from both tables'],
+        ['<code>leftouter</code>','All rows from left, matching from right'],
+        ['<code>rightouter</code>','All rows from right, matching from left'],
+        ['<code>leftanti</code>','Left rows with NO match on right (useful for allow-listing)'],
+        ['<code>leftsemi</code>','Left rows that HAVE a match on right']
+      ]));
+    h += csSection('Threat Hunting Examples',
+      csBlock('-- IP IOC hunt\nsearch * | where SourceIP == \'10.0.0.1\' or DestinationIP == \'10.0.0.1\' or ClientIP == \'10.0.0.1\'\n| take 1000\n\n-- Hash hunt across endpoint tables\nsearch * | where SHA256 == \'e3b0c44298fc1c149afbf4c8996fb924\' or FileHash == \'e3b0c44298fc1c149afbf4c8996fb924\'\n| project TimeGenerated, Table=Type, SourceIP, FileName, SHA256\n\n-- Beacon detection (repeated outbound connections)\nDeviceNetworkEvents\n| where RemotePort == 443 and ActionType == \'ConnectionSuccess\'\n| summarize Connections=count(), Destinations=dcount(RemoteIP) by DeviceName, ProcessName\n| where Connections > 100 and Destinations < 3\n| sort by Connections desc\n\n-- Suspicious powershell download cradle\nDeviceProcessEvents\n| where ProcessCommandLine contains \'DownloadString\' or ProcessCommandLine contains \'IEX\' or ProcessCommandLine contains \'Invoke-WebRequest\'\n| project TimeGenerated, DeviceName, AccountName, ProcessCommandLine\n\n-- RDP brute force (Windows Event ID 4625)\nSecurityEvent\n| where EventID == 4625\n| summarize FailedLogins=count() by SourceIP, TargetAccount=TargetUserName, bin(TimeGenerated, 10m)\n| where FailedLogins > 5\n| sort by FailedLogins desc'));
+    return h;
+  };
+
+
+  CHEATS.elastic = function(){
+    var h = '';
+    h += csSection('ECS-Based Search Syntax',
+      csBlock('-- Elastic Common Schema (ECS) field-based search\nsource.ip: "10.0.0.1"\n\n-- KQL (Kibana Query Language)\nsource.ip : "10.0.0.1" and event.category : "network"\n\n-- Lucene query string\nsource.ip:10.0.0.1 AND event.category:network'));
+    h += csSection('Operators (KQL)',
+      csTable(['Operator','Meaning','Example'], [
+        ['<code>:</code>','Field contains value','<code>source.ip : "10.0.0.1"</code>'],
+        ['<code>and</code>','Boolean AND','<code>source.ip : "10.0.0.1" and event.category : "network"</code>'],
+        ['<code>or</code>','Boolean OR','<code>source.ip : "10.0.0.1" or destination.ip : "10.0.0.1"</code>'],
+        ['<code>not</code>','Exclude','<code>not source.ip : "10.0.0.0/8"</code>'],
+        ['<code>&gt;</code> / <code>&gt;=</code>','Greater than','<code>source.bytes : &gt; 1000000</code>'],
+        ['<code>&lt;</code> / <code>&lt;=</code>','Less than','<code>event.duration : &lt; 100</code>'],
+        ['<code>*</code>','Wildcard (multi-char)','<code>dns.question.name : *evil*</code>'],
+        ['<code>?</code>','Wildcard (single-char)','<code>file.name : report_2026_??.pdf</code>'],
+        ['<code>"phrase"</code>','Exact phrase','<code>message : "failed login"</code>'],
+        ['<code>()</code>','Grouping','<code>(source.ip : "1.1.1.1" or source.ip : "2.2.2.2") and event.category : "network"</code>']
+      ]));
+    h += csSection('Key ECS Fields for Threat Hunting',
+      csTable(['Category','Fields'], [
+        ['IP','<code>source.ip</code> <code>destination.ip</code> <code>client.ip</code> <code>server.ip</code> <code>network.forwarded_ip</code>'],
+        ['Port','<code>source.port</code> <code>destination.port</code> <code>network.transport</code>'],
+        ['Domain / URL','<code>url.domain</code> <code>url.full</code> <code>url.path</code> <code>dns.question.name</code> <code>destination.domain</code>'],
+        ['Email','<code>email.sender.address</code> <code>email.to.address</code> <code>email.subject</code> <code>email.attachments.file.name</code>'],
+        ['File / Hash','<code>file.hash.md5</code> <code>file.hash.sha1</code> <code>file.hash.sha256</code> <code>file.name</code> <code>file.path</code> <code>file.size</code>'],
+        ['Process','<code>process.name</code> <code>process.pid</code> <code>process.command_line</code> <code>process.parent.name</code> <code>process.hash.sha256</code>'],
+        ['User / Auth','<code>user.name</code> <code>user.domain</code> <code>user.email</code> <code>related.user</code>'],
+        ['Event','<code>event.category</code> <code>event.type</code> <code>event.action</code> <code>event.outcome</code> <code>event.dataset</code>'],
+        ['Host','<code>host.name</code> <code>host.ip</code> <code>host.os.family</code> <code>agent.id</code>'],
+        ['Network','<code>network.protocol</code> <code>network.direction</code> <code>network.transport</code> <code>network.bytes</code>'],
+        ['Threat','<code>threat.software.name</code> <code>threat.indicator.ip</code> <code>threat.tactic.name</code> <code>threat.technique.id</code>']
+      ]));
+    h += csSection('Event Categories & Types',
+      csTable(['event.category','event.type Examples'], [
+        ['<code>authentication</code>','<code>start</code> <code>end</code> <code>info</code>'],
+        ['<code>network</code>','<code>connection</code> <code>protocol</code> <code>info</code>'],
+        ['<code>process</code>','<code>start</code> <code>end</code> <code>change</code>'],
+        ['<code>file</code>','<code>creation</code> <code>deletion</code> <code>change</code>'],
+        ['<code>dns</code>','<code>query</code> <code>answer</code>'],
+        ['<code>email</code>','<code>info</code> <code>error</code>'],
+        ['<code>malware</code>','<code>info</code> <code>allowed</code> <code>denied</code>'],
+        ['<code>intrusion_detection</code>','<code>allowed</code> <code>denied</code>'],
+        ['<code>registry</code>','<code>change</code> <code>creation</code> <code>deletion</code>'],
+        ['<code>web</code>','<code>access</code> <code>error</code>']
+      ]));
+    h += csSection('Time Range Filters',
+      csTable(['Syntax','Meaning'], [
+        ['<code>@timestamp &gt; now-7d</code>','Last 7 days'],
+        ['<code>@timestamp &gt; now-24h</code>','Last 24 hours'],
+        ['<code>@timestamp &gt; now-1h</code>','Last hour'],
+        ['<code>@timestamp [2026-07-01 TO 2026-07-21]</code>','Absolute date range (Lucene)'],
+        ['<code>@timestamp &gt;= "2026-07-01" and @timestamp &lt;= "2026-07-21"</code>','Absolute range (KQL)']
+      ]));
+    h += csSection('Aggregation & Stats (ES|QL / Kibana Lens)',
+      csTable(['Pattern','Purpose'], [
+        ['<code>stats count() by source.ip</code>','Count events by field (ES|QL)'],
+        ['<code>stats count_distinct(source.ip)</code>','Distinct count (ES|QL)'],
+        ['<code>stats sum(source.bytes) by host.name</code>','Sum by group (ES|QL)'],
+        ['<code>stats avg(event.duration) by event.category</code>','Average by category (ES|QL)'],
+        ['<code>top(source.ip, 10)</code>','Top 10 values (ES|QL)'],
+        ['<code>where count &gt; 100</code>','Filter aggregated results'],
+        ['<code>sort count desc</code>','Sort descending']
+      ]));
+    h += csSection('Threat Hunting Examples',
+      csBlock('-- IP IOC hunt\nsource.ip: "10.0.0.1" OR destination.ip: "10.0.0.1" OR client.ip: "10.0.0.1"\n\n-- Network scoped\nsource.ip: "10.0.0.1" AND event.category: "network"\n\n-- Hash hunt across endpoint\nfile.hash.sha256: "e3b0c44298fc1c149afbf4c8996fb924" OR process.hash.sha256: "e3b0c44298fc1c149afbf4c8996fb924"\n\n-- Endpoint / malware scoped\nfile.hash.sha256: "e3b0c44298fc1c149afbf4c8996fb924" AND event.category: "malware"\n\n-- Malicious domain in DNS\ndns.question.name: "*evil.com*" AND event.category: "dns"\n\n-- Suspicious powershell\nprocess.name: "powershell.exe" AND process.command_line: "*DownloadString*"\n\n-- Lateral movement (RDP login Type 10)\nevent.code: "4624" AND winlog.logon.type: "10"\n\n-- C2 beacon pattern\nnetwork.direction: "outbound" AND destination.port: 443\n| stats count() by source.ip, destination.ip\n| where count > 50\n\n-- Threat intel match\nthreat.indicator.ip: * AND event.category: "network"'));
+    return h;
+  };
+
   function renderCheatSheet(platform) {
     csBody.innerHTML = CHEATS[platform] ? CHEATS[platform]() : '';
   }
@@ -2115,8 +2600,11 @@ details.bulk-detail .detail-body {
   function openCheatSheet() {
     csOpen = true;
     mainPage.classList.add('hidden');
+    cvPage.classList.add('hidden');
     csPage.classList.remove('hidden');
     csLink.textContent = '← Back';
+
+    if (cvOpen) { cvOpen = false; cvLink.textContent = 'Converter'; cvLink.style.color = ''; }
     renderCheatSheet(csSelect.value);
   }
 
@@ -2125,7 +2613,7 @@ details.bulk-detail .detail-body {
     csPage.classList.add('hidden');
     mainPage.classList.remove('hidden');
     csLink.textContent = 'Cheat Sheet';
-    render();  // refresh the main page
+    render();
   }
 
   csSelect.addEventListener('change', function(){
@@ -2138,6 +2626,532 @@ details.bulk-detail .detail-body {
       closeCheatSheet();
     } else {
       openCheatSheet();
+    }
+  });
+
+
+  var cvPage        = document.getElementById('cvPage');
+  var cvLink        = document.getElementById('converterLink');
+  var cvOpen        = false;
+  var cvSourceEl    = document.getElementById('cvSourceQuery');
+  var cvDetectedEl  = document.getElementById('cvDetectedPlatform');
+  var cvOverrideEl  = document.getElementById('cvSourceOverride');
+  var cvTargetEl    = document.getElementById('cvTargetPlatform');
+  var cvConvertBtn  = document.getElementById('cvConvertBtn');
+  var cvOutputSec   = document.getElementById('cvOutputSection');
+  var cvOutputCtr   = document.getElementById('cvOutputContainer');
+  var cvExtractedSec = document.getElementById('cvExtractedSection');
+  var cvExtractedIOCs = document.getElementById('cvExtractedIOCs');
+  var cvDebounce    = null;
+
+  var PLATFORM_DETECT = [
+    { key: 'qradar',  label: 'IBM QRadar (AQL)', patterns: [/SELECT\s+.*\s+FROM\s+(events|flows)/i, /LAST\s+\d+\s+(DAYS|HOURS|MINUTES)/i, /START\s+'[^']*'\s+STOP/i, /sourceip\s*=/i, /destinationip\s*=/i, /identityip\s*=/i] },
+    { key: 'splunk',  label: 'Splunk (SPL)',      patterns: [/index\s*=\s*\S+/, /\|\s*stats\s+count/i, /\|\s*table\s/, /\|\s*eval\s/, /\|\s*d\w*d\w*p\s/, /sourcetype\s*=\s*\S+/, /earliest\s*=\s*[-\w]+/] },
+    { key: 'rsa',     label: 'RSA NetWitness',    patterns: [/ip\.src\s*=/, /ip\.dst\s*=/, /file\.hash\s*=/, /alias\.host\s*=/, /web\.domain\s*=/, /mail\.src\s*=/, /checksum\./, /\s*\|\|\s*/] },
+    { key: 'datadog', label: 'Datadog SIEM',      patterns: [/@\w+\.?\w*:\s*[^\s\)]+/, /service:\s*\w+/, /source:\s*\w+/, /status:\s*\w+/] },
+    { key: 'wazuh',   label: 'Wazuh',             patterns: [/data\.\w+:\s*[^\s\)]+/, /rule\.level\s*[><=]+/, /rule\.id:\s*\d+/, /location:\s*\w+/, /rule\.mitre\.id:/] },
+    { key: 'sentinel',label: 'Microsoft Sentinel', patterns: [/\|\s*where\s+\w+\s*(==|!=|contains)\s/, /\|\s*project\s/, /\|\s*summarize\s/, /\|\s*(take|limit)\s+\d+/, /ago\s*\(/, /CommonSecurityLog|SigninLogs|AuditLogs|Device\w+Events|SecurityEvent|EmailEvents|DnsEvents|OfficeActivity/, /\|\s*extend\s/] },
+    { key: 'elastic', label: 'Elastic SIEM',      patterns: [/source\.ip\s*:\s*"[^"]*"/, /destination\.ip\s*:\s*"[^"]*"/, /event\.category\s*:\s*"[^"]*"/, /event\.dataset\s*:\s*"[^"]*"/, /file\.hash\./, /process\.hash\./, /dns\.question\.name\s*:/, /email\.sender\.address\s*:/] },
+  ];
+
+  var PLATFORM_NAMES = { qradar: 'IBM QRadar', splunk: 'Splunk', rsa: 'RSA NetWitness', datadog: 'Datadog SIEM', wazuh: 'Wazuh', sentinel: 'Microsoft Sentinel', elastic: 'Elastic SIEM' };
+
+  function detectPlatform(query) {
+    var scores = {};
+    for (var p = 0; p < PLATFORM_DETECT.length; p++) {
+      var platform = PLATFORM_DETECT[p];
+      scores[platform.key] = 0;
+      for (var r = 0; r < platform.patterns.length; r++) {
+        if (platform.patterns[r].test(query)) scores[platform.key] += 1;
+      }
+    }
+    var best = null, bestScore = 0;
+    var keys = Object.keys(scores);
+    for (var i = 0; i < keys.length; i++) {
+      if (scores[keys[i]] > bestScore) { bestScore = scores[keys[i]]; best = keys[i]; }
+    }
+    return bestScore > 0 ? best : null;
+  }
+
+  function extractIOCs(query) {
+    var found = [];
+    var seen = {};
+
+    var clean = query.replace(/\\\n/g, ' ').replace(/--[^\n]*/g, '');
+
+    var quoted = [];
+    var qre = /["']([^"']+)["']/g;
+    var qm;
+    while ((qm = qre.exec(query)) !== null) {
+      quoted.push(qm[1]);
+    }
+
+    var ipRe = /\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?:\/\d{1,2})?)\b/g;
+    var ipm;
+    while ((ipm = ipRe.exec(clean)) !== null) {
+      var key = 'ip:' + ipm[1];
+      if (!seen[key]) { seen[key] = true; found.push({ type: 'ip', value: ipm[1], label: 'IP' }); }
+    }
+
+    var sha256Re = /\b([a-fA-F0-9]{64})\b/g;
+    var s256m;
+    while ((s256m = sha256Re.exec(clean)) !== null) {
+      var k = 'sha256:' + s256m[1];
+      if (!seen[k] && !seen['ip:' + s256m[1]]) { seen[k] = true; found.push({ type: 'sha256', value: s256m[1], label: 'SHA-256' }); }
+    }
+
+    var sha1Re = /\b([a-fA-F0-9]{40})\b/g;
+    var s1m;
+    while ((s1m = sha1Re.exec(clean)) !== null) {
+      var k1 = 'sha1:' + s1m[1];
+      if (!seen[k1]) { seen[k1] = true; found.push({ type: 'sha1', value: s1m[1], label: 'SHA-1' }); }
+    }
+
+    var md5Re = /\b([a-fA-F0-9]{32})\b/g;
+    var md5m;
+    while ((md5m = md5Re.exec(clean)) !== null) {
+      var km = 'md5:' + md5m[1];
+      if (!seen[km]) { seen[km] = true; found.push({ type: 'md5', value: md5m[1], label: 'MD5' }); }
+    }
+
+    var emailRe = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    var em;
+    while ((em = emailRe.exec(clean)) !== null) {
+      var ke = 'email:' + em[1];
+      if (!seen[ke]) { seen[ke] = true; found.push({ type: 'email', value: em[1], label: 'Email' }); }
+    }
+
+    for (var qi = 0; qi < quoted.length; qi++) {
+      var qv = quoted[qi];
+      if (/^[\w.-]+\.\w{2,}(\/\S*)?$/.test(qv) && !qv.includes('@')) {
+        var kd = 'domain:' + qv;
+        if (!seen[kd]) { seen[kd] = true; found.push({ type: 'domain', value: qv, label: 'Domain' }); }
+      }
+    }
+
+    var domainRe = /(?:url|domain|hostname|RemoteUrl|RemoteDomain|dns\.question\.name|url\.domain)\S*\s*[=:~]+\s*"?([\w.-]+\.\w{2,}(\/\S*)?)"?/gi;
+    var dm;
+    while ((dm = domainRe.exec(clean)) !== null) {
+      var dv = dm[1].replace(/["'*]/g, '');
+      if (dv && /[\w.-]+\.\w{2,}/.test(dv) && !dv.includes('@')) {
+        var kdd = 'domain:' + dv;
+        if (!seen[kdd]) { seen[kdd] = true; found.push({ type: 'domain', value: dv, label: 'Domain' }); }
+      }
+    }
+    return found;
+  }
+
+
+  var FIELD_MAP = {
+    src_ip:     { qradar: 'sourceip', splunk: 'src_ip', rsa: 'ip.src', datadog: '@src.ip', wazuh: 'data.srcip', sentinel: 'SourceIP', elastic: 'source.ip' },
+    dst_ip:     { qradar: 'destinationip', splunk: 'dest_ip', rsa: 'ip.dst', datadog: '@dst.ip', wazuh: 'data.dstip', sentinel: 'DestinationIP', elastic: 'destination.ip' },
+    client_ip:  { qradar: 'identityip', splunk: 'src', rsa: 'alias.ip', datadog: '@network.client.ip', wazuh: 'srcip', sentinel: 'ClientIP', elastic: 'client.ip' },
+    url:        { qradar: 'url', splunk: 'url', rsa: 'web.page', datadog: '@http.url', wazuh: 'data.url', sentinel: 'RemoteUrl', elastic: 'url.full' },
+    domain:     { qradar: 'domainname', splunk: 'domain', rsa: 'web.domain', datadog: '@dns.question', wazuh: 'data.domain', sentinel: 'RemoteDomain', elastic: 'url.domain' },
+    hostname:   { qradar: 'hostname', splunk: 'host', rsa: 'alias.host', datadog: '@http.host', wazuh: 'hostname', sentinel: 'DeviceName', elastic: 'host.name' },
+    email:      { qradar: 'username', splunk: 'sender', rsa: 'mail.src', datadog: '@email', wazuh: 'data.email', sentinel: 'UserPrincipalName', elastic: 'email.sender.address' },
+    email_to:   { qradar: 'username', splunk: 'recipient', rsa: 'mail.dst', datadog: '@mail.to', wazuh: 'mail.to', sentinel: 'MailTo', elastic: 'email.to.address' },
+    email_from: { qradar: 'username', splunk: 'mail_from', rsa: 'mail.src', datadog: '@mail.from', wazuh: 'mail.from', sentinel: 'MailFrom', elastic: 'email.sender.address' },
+    file_hash:  { qradar: 'filehash', splunk: 'file_hash', rsa: 'file.hash', datadog: '@file.hash', wazuh: 'file.hash', sentinel: 'FileHash', elastic: 'file.hash.sha256' },
+    sha256:     { qradar: 'sha256hash', splunk: 'sha256', rsa: 'checksum.sha256', datadog: '@file.hash.sha256', wazuh: 'sha256', sentinel: 'SHA256', elastic: 'file.hash.sha256' },
+    sha1:       { qradar: 'sha1hash', splunk: 'sha1', rsa: 'checksum', datadog: '@file.hash.sha1', wazuh: 'sha1', sentinel: 'SHA1', elastic: 'file.hash.sha1' },
+    md5:        { qradar: 'md5hash', splunk: 'md5', rsa: 'checksum.md5', datadog: '@file.hash.md5', wazuh: 'md5', sentinel: 'MD5', elastic: 'file.hash.md5' },
+    file_name:  { qradar: 'filename', splunk: 'file_name', rsa: 'file.name', datadog: '@file.name', wazuh: 'file.name', sentinel: 'FileName', elastic: 'file.name' },
+    process:    { qradar: 'processname', splunk: 'process', rsa: 'process.name', datadog: '@process.name', wazuh: 'data.processname', sentinel: 'ProcessCommandLine', elastic: 'process.name' },
+    user:       { qradar: 'username', splunk: 'user', rsa: 'user.name', datadog: '@usr.name', wazuh: 'user', sentinel: 'AccountName', elastic: 'user.name' },
+    port:       { qradar: 'destinationport', splunk: 'dest_port', rsa: 'tcp.port', datadog: '@network.port', wazuh: 'data.dstport', sentinel: 'DestinationPort', elastic: 'destination.port' },
+    protocol:   { qradar: 'protocol', splunk: 'protocol', rsa: 'service', datadog: '@network.protocol', wazuh: 'protocol', sentinel: 'Protocol', elastic: 'network.protocol' },
+    action:     { qradar: 'eventname', splunk: 'action', rsa: 'event.cat.name', datadog: '@evt.name', wazuh: 'action', sentinel: 'Activity', elastic: 'event.action' },
+    event_id:   { qradar: 'eventid', splunk: 'EventCode', rsa: 'event.id', datadog: '@evt.id', wazuh: 'rule.id', sentinel: 'EventID', elastic: 'event.code' }
+  };
+
+  function mapField(sourceField, sourcePlatform, targetPlatform) {
+    if (!sourceField) return null;
+    var canonical = null;
+    var keys = Object.keys(FIELD_MAP);
+    for (var i = 0; i < keys.length; i++) {
+      if (FIELD_MAP[keys[i]][sourcePlatform] && FIELD_MAP[keys[i]][sourcePlatform].toLowerCase() === sourceField.toLowerCase()) {
+        canonical = keys[i];
+        break;
+      }
+    }
+    if (canonical && FIELD_MAP[canonical][targetPlatform]) {
+      return FIELD_MAP[canonical][targetPlatform];
+    }
+    return sourceField;
+  }
+
+  function extractConditions(query, platform) {
+    var conditions = [];
+    var patterns = {
+      qradar:    [/(\w+)\s*(=|!=|LIKE|NOT\s+LIKE|>=|<=|>|<)\s*'([^']*)'/gi, 1, 3, 2],
+      splunk:    [/(\w+)\s*(=|!=|>=|<=|>|<)\s*"([^"]*)"/g, 1, 3, 2],
+      splunk2:   [/(\w+)\s*(=|!=|>=|<=|>|<)\s*([^\s|]+)/g, 1, 3, 2],
+      rsa:       [/([\w.]+)\s*(=|!=|>=|<=|>|<)\s*'([^']*)'/gi, 1, 3, 2],
+      datadog:   [/@([\w.]+)\s*:\s*([^\s\)]+)/g, 1, 2, ':'],
+      datadog2:  [/(service|source|host|status|env)\s*:\s*(\w+)/g, 1, 2, ':'],
+      wazuh:     [/([\w.]+)\s*:\s*"?([^"\s\)]+)"?/g, 1, 2, ':'],
+      sentinel:  [/(\w+)\s*(==|!=|contains|startswith|endswith|has|in)\s*'([^']*)'/gi, 1, 3, 2],
+      elastic:   [/([\w.]+)\s*:\s*"([^"]*)"/g, 1, 2, ':']
+    };
+    var pp = [];
+    if (platform === 'splunk') pp = [patterns.splunk, patterns.splunk2];
+    else if (platform === 'datadog') pp = [patterns.datadog, patterns.datadog2];
+    else if (platform === 'qradar') pp = [patterns.qradar];
+    else if (platform === 'rsa') pp = [patterns.rsa];
+    else if (platform === 'sentinel') pp = [patterns.sentinel];
+    else if (platform === 'elastic') pp = [patterns.elastic];
+    else pp = [patterns.splunk, patterns.splunk2, patterns.qradar, patterns.datadog, patterns.wazuh, patterns.sentinel, patterns.elastic, patterns.rsa];
+
+    for (var pi = 0; pi < pp.length; pi++) {
+      var re = new RegExp(pp[pi][0].source, pp[pi][0].flags);
+      var m;
+      while ((m = re.exec(query)) !== null) {
+        var field = m[pp[pi][1]];
+        var value = m[pp[pi][2]];
+        var op = pp[pi][3];
+        if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(value)) continue;
+        if (/^[a-fA-F0-9]{32,64}$/.test(value)) continue;
+        if (value.includes('@') && value.includes('.')) continue;
+        if (field.length > 40 || value.length > 200) continue;
+        conditions.push({ field: field, value: value, operator: op });
+      }
+    }
+    return conditions;
+  }
+
+  function extractKeywords(query, platform) {
+    var keywords = [];
+    var qre = /["']([^"']{3,})["']/g;
+    var qm;
+    while ((qm = qre.exec(query)) !== null) {
+      var w = qm[1].trim();
+      if (w.length >= 2 && !/[<>!=|@]/.test(w) && !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(w) && keywords.indexOf(w) === -1) {
+        keywords.push(w);
+      }
+    }
+    return keywords;
+  }
+
+  function extractTimeRange(query, platform) {
+    var tr = null;
+    if (platform === 'qradar') {
+      var m = query.match(/LAST\s+(\d+)\s+(DAYS|HOURS|MINUTES)/i);
+      if (m) tr = 'LAST ' + m[1] + ' ' + m[2];
+    } else if (platform === 'splunk') {
+      var em = query.match(/earliest\s*=\s*([-\w@]+)/);
+      var lm = query.match(/latest\s*=\s*([-\w@]+)/);
+      if (em) tr = 'earliest=' + em[1] + (lm ? ' latest=' + lm[1] : '');
+    } else if (platform === 'sentinel') {
+      var am = query.match(/ago\s*\(\s*(\d+)([hdm])\s*\)/);
+      if (am) tr = 'last ' + am[1] + (am[2] === 'h' ? ' hours' : am[2] === 'd' ? ' days' : ' minutes');
+    }
+    return tr;
+  }
+
+  function convertQuery(sourceQuery, sourcePlatform, targetPlatform) {
+    var iocs = extractIOCs(sourceQuery);
+    var conditions = extractConditions(sourceQuery, sourcePlatform);
+    var keywords = extractKeywords(sourceQuery, sourcePlatform);
+    var timeRange = extractTimeRange(sourceQuery, sourcePlatform);
+
+    var siemNames = { qradar: 'QRadar', splunk: 'Splunk', rsa: 'RSA NetWitness', datadog: 'Datadog SIEM', wazuh: 'Wazuh', sentinel: 'Sentinel', elastic: 'Elastic SIEM' };
+    var siemBadge = { qradar: 'qr', splunk: 'sp', rsa: 'rsa', datadog: 'dd', wazuh: 'wz', sentinel: 'st', elastic: 'es' };
+    var typeNames = { ip: 'IP', email: 'Email', domain: 'Domain/URL', sha1: 'SHA-1', sha256: 'SHA-256', md5: 'MD5' };
+
+    var totalElements = iocs.length + conditions.length + keywords.length;
+    if (totalElements === 0) return null;
+
+    var html = '';
+    html += '<div class="cv-output-meta">';
+    html += '<span class="badge ' + siemBadge[sourcePlatform] + '">' + siemNames[sourcePlatform] + '</span>';
+    html += '<span class="arrow">&rarr;</span>';
+    html += '<span class="badge ' + siemBadge[targetPlatform] + '">' + siemNames[targetPlatform] + '</span>';
+    html += '<span style="margin-left:4px;">&mdash; ' + totalElements + ' element' + (totalElements !== 1 ? 's' : '') + ' converted</span>';
+    html += '</div>';
+
+
+    if (iocs.length > 0) {
+      var grouped = {};
+      for (var i = 0; i < iocs.length; i++) {
+        var ioc = iocs[i];
+        if (!grouped[ioc.type]) grouped[ioc.type] = [];
+        if (grouped[ioc.type].length < 50) grouped[ioc.type].push(ioc.value);
+      }
+      html += '<div style="font-weight:700;font-size:0.76rem;color:var(--accent);margin-bottom:6px;">Indicator-Based Queries</div>';
+      var types = Object.keys(grouped);
+      for (var t = 0; t < types.length; t++) {
+        var type = types[t];
+        var vals = grouped[type];
+        var typeLabel = typeNames[type] || type.toUpperCase();
+        var templateFn = SINGLE_TEMPLATES[type];
+        if (!templateFn || !templateFn[targetPlatform]) continue;
+
+        html += '<details class="bulk-detail"' + (vals.length <= 2 ? ' open' : '') + '>';
+        html += '<summary>' + typeLabel + ' &mdash; <strong>' + vals.length + '</strong> IOC' + (vals.length !== 1 ? 's' : '') + '</summary>';
+        html += '<div class="detail-body">';
+        if (vals.length === 1) {
+          var q = templateFn[targetPlatform](vals[0]);
+          html += '<pre class="query-box" style="font-size:0.78rem;">' + escHTML(q) + '<button class="copy-btn" data-query="' + escHTML(q) + '">Copy</button></pre>';
+        } else {
+          var combined = '';
+          for (var vi = 0; vi < vals.length; vi++) {
+            combined += templateFn[targetPlatform](vals[vi]) + '\n\n';
+          }
+          html += '<pre class="query-box" style="font-size:0.74rem;max-height:380px;">' + escHTML(combined.trim()) + '<button class="copy-btn" data-query="' + escHTML(combined.trim()) + '">Copy All</button></pre>';
+        }
+        html += '</div></details>';
+      }
+    }
+
+
+    if (conditions.length > 0) {
+      html += '<div style="font-weight:700;font-size:0.76rem;color:var(--accent);margin:14px 0 6px;">Field-Mapped Query</div>';
+      html += '<details class="bulk-detail" open>';
+      html += '<summary>Translated conditions &mdash; <strong>' + conditions.length + '</strong> field' + (conditions.length !== 1 ? 's' : '') + ' mapped</summary>';
+      html += '<div class="detail-body">';
+      var condQuery = buildConditionQuery(conditions, keywords, timeRange, sourcePlatform, targetPlatform);
+      html += '<pre class="query-box" style="font-size:0.78rem;">' + escHTML(condQuery) + '<button class="copy-btn" data-query="' + escHTML(condQuery) + '">Copy</button></pre>';
+      html += '<div style="margin-top:8px;font-size:0.7rem;color:var(--text2);">';
+      html += '<table class="cs-table" style="margin-top:4px;"><thead><tr><th>Source Field</th><th>&rarr;</th><th>Target Field</th><th>Value</th></tr></thead><tbody>';
+      for (var ci = 0; ci < Math.min(conditions.length, 12); ci++) {
+        var c = conditions[ci];
+        var mapped = mapField(c.field, sourcePlatform, targetPlatform);
+        html += '<tr><td><code>' + escHTML(c.field) + '</code></td><td>&rarr;</td><td><code>' + escHTML(mapped) + '</code></td><td>' + escHTML(c.value) + '</td></tr>';
+      }
+      if (conditions.length > 12) html += '<tr><td colspan="4" style="color:var(--text2);">+ ' + (conditions.length - 12) + ' more</td></tr>';
+      html += '</tbody></table></div>';
+      html += '</div></details>';
+    }
+
+
+    if (keywords.length > 0 && iocs.length === 0 && conditions.length === 0) {
+      html += '<div style="font-weight:700;font-size:0.76rem;color:var(--accent);margin:14px 0 6px;">Keyword-Based Query</div>';
+      html += '<details class="bulk-detail" open>';
+      html += '<summary>Translated keyword search &mdash; <strong>' + keywords.length + '</strong> term' + (keywords.length !== 1 ? 's' : '') + '</summary>';
+      html += '<div class="detail-body">';
+      var kwQuery = buildKeywordQuery(keywords, timeRange, targetPlatform);
+      html += '<pre class="query-box" style="font-size:0.78rem;">' + escHTML(kwQuery) + '<button class="copy-btn" data-query="' + escHTML(kwQuery) + '">Copy</button></pre>';
+      html += '</div></details>';
+    }
+
+    return { html: html, iocCount: iocs.length, iocs: iocs };
+  }
+
+  function buildConditionQuery(conditions, keywords, timeRange, sourcePlatform, targetPlatform) {
+    var parts = [];
+    for (var i = 0; i < conditions.length; i++) {
+      var c = conditions[i];
+      var mappedField = mapField(c.field, sourcePlatform, targetPlatform);
+      var targetCond = formatCondition(mappedField, c.value, c.operator, targetPlatform);
+      if (targetCond) parts.push(targetCond);
+    }
+    for (var k = 0; k < keywords.length; k++) {
+      parts.push(formatKeyword(keywords[k], targetPlatform));
+    }
+    var body = '';
+    var sep = targetPlatform === 'sentinel' ? ' and ' : targetPlatform === 'qradar' ? ' AND ' : targetPlatform === 'rsa' ? ' && ' : ' AND ';
+    if (targetPlatform === 'splunk') sep = ' ';
+
+    if (targetPlatform === 'qradar') {
+      body = 'SELECT * FROM events WHERE ' + parts.join(' AND ');
+    } else if (targetPlatform === 'splunk') {
+      body = 'index=* ' + parts.join(' ');
+    } else if (targetPlatform === 'rsa') {
+      body = parts.join(' && ');
+    } else if (targetPlatform === 'datadog') {
+      body = parts.join(' AND ');
+    } else if (targetPlatform === 'wazuh') {
+      body = parts.join(' AND ');
+    } else if (targetPlatform === 'sentinel') {
+      body = 'search *\n| where ' + parts.join(' and ');
+    } else if (targetPlatform === 'elastic') {
+      body = parts.join(' AND ');
+    } else {
+      body = parts.join(' AND ');
+    }
+
+    if (timeRange && targetPlatform === 'qradar') body += ' ' + timeRange;
+    if (timeRange && targetPlatform === 'sentinel') body += '\n| where TimeGenerated > ago(7d)';
+    if (targetPlatform === 'splunk' && conditions.length > 0) body += '\n| stats count by index, sourcetype\n| sort - count';
+    if (targetPlatform === 'sentinel' && conditions.length > 0) body += '\n| take 1000';
+
+    return body.trim();
+  }
+
+  function formatCondition(field, value, operator, targetPlatform) {
+    var esc = value.replace(/'/g, "''");
+    if (targetPlatform === 'qradar') {
+      if (operator === 'contains' || operator === 'has') return "LOWER(" + field + ") LIKE '%" + esc.toLowerCase() + "%'";
+      if (operator === '!=') return field + " != '" + esc + "'";
+      return field + " = '" + esc + "'";
+    } else if (targetPlatform === 'splunk') {
+      return field + '="' + value + '"';
+    } else if (targetPlatform === 'rsa') {
+      return field + " = '" + value + "'";
+    } else if (targetPlatform === 'datadog') {
+      if (field.indexOf('@') === 0) return field + ':' + value;
+      return '@' + field + ':' + value;
+    } else if (targetPlatform === 'wazuh') {
+      return field + ':' + value;
+    } else if (targetPlatform === 'sentinel') {
+      if (operator === 'contains' || operator === 'has') return field + " contains '" + esc + "'";
+      if (operator === '!=') return field + " != '" + esc + "'";
+      return field + " == '" + esc + "'";
+    } else if (targetPlatform === 'elastic') {
+      return field + ': "' + value + '"';
+    }
+    return field + '=' + value;
+  }
+
+  function formatKeyword(keyword, targetPlatform) {
+    if (targetPlatform === 'qradar') return "payload LIKE '%" + keyword + "%'";
+    if (targetPlatform === 'splunk') return '"' + keyword + '"';
+    if (targetPlatform === 'rsa') return "event.cat.name = '" + keyword + "'";
+    if (targetPlatform === 'datadog') return '"' + keyword + '"';
+    if (targetPlatform === 'wazuh') return '"' + keyword + '"';
+    if (targetPlatform === 'sentinel') return "* contains '" + keyword + "'";
+    if (targetPlatform === 'elastic') return '"' + keyword + '"';
+    return keyword;
+  }
+
+  function buildKeywordQuery(keywords, timeRange, targetPlatform) {
+    var kw = keywords.join(' ');
+    if (targetPlatform === 'qradar') {
+      var q = "SELECT * FROM events WHERE payload LIKE '%" + kw + "%'";
+      if (timeRange) q += ' ' + timeRange;
+      return q;
+    } else if (targetPlatform === 'splunk') {
+      return 'index=* "' + kw + '"\n| stats count by index, sourcetype\n| sort - count';
+    } else if (targetPlatform === 'rsa') {
+      return "event.cat.name = '" + kw + "'";
+    } else if (targetPlatform === 'datadog') {
+      return '"' + kw + '"';
+    } else if (targetPlatform === 'wazuh') {
+      return '"' + kw + '"';
+    } else if (targetPlatform === 'sentinel') {
+      return "search *\n| where * contains '" + kw + "'\n| take 1000";
+    } else if (targetPlatform === 'elastic') {
+      return '"' + kw + '"';
+    }
+    return kw;
+  }
+
+  function updateConverterUI() {
+    var query = cvSourceEl.value.trim();
+    if (!query) {
+      cvDetectedEl.textContent = '—';
+      cvDetectedEl.className = 'cv-detected-platform unknown';
+      cvExtractedSec.style.display = 'none';
+      cvOutputSec.style.display = 'none';
+      return;
+    }
+
+
+    var detected = detectPlatform(query);
+    if (detected) {
+      cvDetectedEl.textContent = PLATFORM_NAMES[detected];
+      cvDetectedEl.className = 'cv-detected-platform';
+      cvOverrideEl.value = 'auto';
+    } else {
+      cvDetectedEl.textContent = 'Could not detect — select manually';
+      cvDetectedEl.className = 'cv-detected-platform unknown';
+    }
+
+
+    var iocs = extractIOCs(query);
+    if (iocs.length > 0) {
+      cvExtractedSec.style.display = 'block';
+      var chipsHtml = '';
+      for (var i = 0; i < Math.min(iocs.length, 30); i++) {
+        chipsHtml += '<span class="cv-ioc-chip"><span class="cv-type-dot"></span>' + escHTML(iocs[i].label) + ': ' + escHTML(iocs[i].value) + '</span>';
+      }
+      if (iocs.length > 30) chipsHtml += '<span class="cv-ioc-chip">+ ' + (iocs.length - 30) + ' more</span>';
+      cvExtractedIOCs.innerHTML = chipsHtml;
+    } else {
+      cvExtractedSec.style.display = 'none';
+    }
+  }
+
+  function performConversion() {
+    var query = cvSourceEl.value.trim();
+    if (!query) { showToast('Paste a source query first'); return; }
+
+    var sourcePlatform = cvOverrideEl.value !== 'auto' ? cvOverrideEl.value : detectPlatform(query);
+    var targetPlatform = cvTargetEl.value;
+
+    if (!sourcePlatform) { showToast('Could not detect source platform — select it manually'); return; }
+    if (!targetPlatform) { showToast('Select a target platform to convert to'); return; }
+    if (sourcePlatform === targetPlatform) { showToast('Source and target platforms are the same — no conversion needed'); return; }
+
+    var result = convertQuery(query, sourcePlatform, targetPlatform);
+    if (!result) {
+      cvOutputSec.style.display = 'block';
+      cvOutputCtr.innerHTML = '<div style="color:var(--text2);font-size:0.85rem;padding:16px 0;text-align:center;">No recognizable elements found. Try pasting a query with field=value conditions, keywords in quotes, or indicators (IPs, domains, emails, hashes).</div>';
+      return;
+    }
+
+    cvOutputSec.style.display = 'block';
+    cvOutputCtr.innerHTML = result.html;
+
+    cvOutputCtr.querySelectorAll('.copy-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var q = this.getAttribute('data-query');
+        copyToClipboard(q, this);
+      });
+    });
+  }
+
+
+  cvSourceEl.addEventListener('input', function() {
+    clearTimeout(cvDebounce);
+    cvDebounce = setTimeout(updateConverterUI, 350);
+  });
+
+  cvOverrideEl.addEventListener('change', function() {
+    if (this.value !== 'auto') {
+      cvDetectedEl.textContent = PLATFORM_NAMES[this.value];
+      cvDetectedEl.className = 'cv-detected-platform';
+    } else {
+      updateConverterUI();
+    }
+  });
+
+  cvConvertBtn.addEventListener('click', performConversion);
+
+  cvTargetEl.addEventListener('change', function() {
+    if (cvSourceEl.value.trim() && this.value) {
+      performConversion();
+    }
+  });
+
+  function openConverter() {
+    cvOpen = true;
+    mainPage.classList.add('hidden');
+    csPage.classList.add('hidden');
+    cvPage.classList.remove('hidden');
+    cvLink.textContent = '← Back';
+    cvLink.style.color = 'var(--accent)';
+
+    if (csOpen) { csOpen = false; csLink.textContent = 'Cheat Sheet'; }
+    if (cvSourceEl.value.trim()) updateConverterUI();
+  }
+
+  function closeConverter() {
+    cvOpen = false;
+    cvPage.classList.add('hidden');
+    mainPage.classList.remove('hidden');
+    cvLink.textContent = 'Converter';
+    cvLink.style.color = '';
+    render();
+  }
+
+  cvLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (cvOpen) {
+      closeConverter();
+    } else {
+      openConverter();
     }
   });
 

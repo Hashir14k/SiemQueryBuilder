@@ -1,4 +1,4 @@
-/* SIEM Query Builder — Service Worker */
+
 const CACHE = 'siem-qb-v1';
 const ASSETS = ['./', './index.html', './manifest.json'];
 

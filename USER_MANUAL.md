@@ -1,6 +1,6 @@
 # SIEM Query Builder — User Manual
 
-> **Version 2.1** | Fully offline · No telemetry · No data leaves your machine
+> **Version 1.9** | Fully offline · No telemetry · No data leaves your machine
 
 ---
 
@@ -29,7 +29,7 @@
 The **SIEM Query Builder** is a browser-based tool that generates native SIEM queries from Indicators of Compromise (IOCs). It's built for threat hunters, incident responders, and SOC analysts who need to pivot quickly across multiple SIEM platforms.
 
 **Key capabilities:**
-- Generate queries for **5 SIEM platforms**
+- Generate queries for **7 SIEM platforms**
 - Support for **6 IOC types** with auto-detection
 - **Single IOC** mode for quick lookups
 - **Bulk IOC** mode for hunting at scale (up to 200 IOCs)
@@ -280,11 +280,35 @@ Queries use field-based syntax compatible with the Wazuh indexer. Includes:
 - `rule.level>=10` for high-fidelity alert scoping
 - `location:firewall`, `location:syscheck` for log source filtering
 
+### Microsoft Sentinel
+**Syntax:** KQL (Kusto Query Language)
+
+Queries use `table | where Condition | project Fields | summarize` pipelines. Includes:
+- `search *` for broad cross-table hunting
+- `CommonSecurityLog`, `SigninLogs`, `AuditLogs` for Azure AD / firewall data
+- `DeviceNetworkEvents`, `DeviceFileEvents`, `DeviceProcessEvents` for MDE endpoint data
+- `EmailEvents`, `DnsEvents`, `SecurityAlert` for email, DNS, and alert investigation
+- `contains`, `startswith`, `has`, `matches regex` for string operations
+- `ago()`, `between`, `now()` for time filtering
+- `summarize count() by`, `dcount()`, `arg_max()` for aggregation
+
+### Elastic SIEM
+**Syntax:** ECS (Elastic Common Schema) with KQL / Lucene
+
+Queries use field-based search against ECS-normalized data. Includes:
+- `source.ip`, `destination.ip`, `client.ip` for IP hunting with `event.category` scoping
+- `email.sender.address`, `email.to.address` for email investigation
+- `url.domain`, `dns.question.name`, `destination.domain` for domain/URL
+- `file.hash.sha256`, `file.hash.md5`, `process.hash.sha256` for hash lookups
+- `event.category`, `event.type`, `event.dataset` for event scoping
+- `threat.indicator.*`, `threat.technique.id` for threat intel matching
+- Wildcard (`*`), exact phrase (`""`), and boolean operators
+
 ---
 
 ## Cheat Sheet
 
-The **Cheat Sheet** is an in-page search query reference covering all 5 SIEM platforms. It's accessible from the header via the **"Cheat Sheet"** button.
+The **Cheat Sheet** is an in-page search query reference covering all 7 SIEM platforms. It's accessible from the header via the **"Cheat Sheet"** button.
 
 ### Opening the Cheat Sheet
 - Click **"Cheat Sheet"** in the header — the main tool cards hide and the cheat sheet appears in their place
@@ -298,6 +322,8 @@ A **dropdown** at the top of the cheat sheet lets you switch between platforms:
 - **RSA NetWitness** — native syntax, operators, attributes by category (IP/port/domain/email/file/user/process)
 - **Datadog SIEM** — faceted syntax, @attribute reference, service/source scoping
 - **Wazuh** — Lucene syntax, operators (incl. fuzzy, regex, proximity), rule-level filtering, location scoping
+- **Microsoft Sentinel (KQL)** — Kusto syntax, tables reference, string/time operators, aggregation, joins
+- **Elastic SIEM** — ECS field reference, KQL/Lucene operators, event categories, aggregation, threat intel matching
 
 ### Content
 Each platform cheat sheet includes:
@@ -377,7 +403,7 @@ The tool still works perfectly without installation — just open `index.html` d
 ### Query Efficiency
 - **Use Chunked Queries** for large batches — running 1 query of 10 IOCs is faster than 10 individual queries
 - **Adjust chunk size** based on your SIEM's query limits — start with 10 and increase if your platform supports it
-- **Select only the SIEMs you need** — generating queries for all 5 when you only use Splunk creates unnecessary output
+- **Select only the SIEMs you need** — generating queries for all 7 when you only use Splunk creates unnecessary output
 
 ### Cheat Sheet Usage
 - Keep the **Cheat Sheet** open in a separate tab/window for quick syntax reference while hunting
