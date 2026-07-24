@@ -1110,6 +1110,27 @@ details.bulk-detail .detail-body {
 
 
 
+  const BAD_EXTS = {
+    exe:1, dll:1, sys:1, drv:1, ocx:1, scr:1, cpl:1, msi:1, msp:1,
+    bat:1, cmd:1, ps1:1, vbs:1, vba:1, vbe:1, wsf:1, wsh:1, hta:1,
+    pdf:1, doc:1, docx:1, docm:1, xls:1, xlsx:1, xlsm:1, ppt:1, pptx:1, pptm:1,
+    rtf:1, odt:1, ods:1, odp:1, odg:1, csv:1, txt:1, log:1,
+    html:1, htm:1, js:1, css:1, php:1, asp:1, aspx:1, jsp:1, cfm:1,
+    zip:1, rar:1, '7z':1, tar:1, gz:1, bz2:1, xz:1, lz:1, z:1, cab:1, iso:1,
+    jpg:1, jpeg:1, png:1, gif:1, bmp:1, svg:1, ico:1, webp:1, tif:1, tiff:1,
+    mp3:1, mp4:1, avi:1, mov:1, wmv:1, mkv:1, flv:1, wav:1, wma:1,
+    tmp:1, bak:1, old:1, dat:1, bin:1, cfg:1, ini:1, inf:1,
+    apk:1, ipa:1, aab:1, deb:1, rpm:1, app:1, dmg:1, pkg:1,
+    py:1, pyc:1, pl:1, rb:1, go:1, jar:1, war:1, ear:1, class:1,
+    enc:1, lock:1, locked:1, crypt:1, encrypted:1, rnsmwr:1, wnry:1, wcry:1
+  };
+
+  function isFileExt(val) {
+    var lastDot = val.lastIndexOf('.');
+    if (lastDot === -1) return false;
+    return BAD_EXTS[val.substring(lastDot + 1).toLowerCase()] === 1;
+  }
+
   const IOC_PATTERNS = [
     { type: 'sha256', rx: /^[a-fA-F0-9]{64}$/,              label: 'SHA-256 (64 hex)' },
     { type: 'sha1',   rx: /^[a-fA-F0-9]{40}$/,              label: 'SHA-1 (40 hex)' },
@@ -1123,7 +1144,10 @@ details.bulk-detail .detail-body {
     const v = value.trim();
     if (!v) return null;
     for (const p of IOC_PATTERNS) {
-      if (p.rx.test(v)) return p.type;
+      if (p.rx.test(v)) {
+        if (p.type === 'domain' && isFileExt(v)) return null;
+        return p.type;
+      }
     }
     return null;
   }
@@ -2200,6 +2224,7 @@ details.bulk-detail .detail-body {
       if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(val)) {
         if (val.split('.').some(function(o){return parseInt(o,10)>255;})) return;
       }
+      if (isFileExt(val)) return;
       var key = val.toLowerCase();
       if (seen[key]) return;
       seen[key] = true;
