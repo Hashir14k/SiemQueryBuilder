@@ -1,0 +1,51 @@
+SIEM Query Builder — Ignored File Extensions (v2.0)
+====================================================
+These extensions are filtered out during IOC extraction to prevent
+false-positive domain matches. Values ending with any of these are
+dropped — they are filenames, not domains.
+
+Executables & Binaries
+----------------------
+  exe   dll   sys   drv   ocx   scr   cpl   msi   msp
+  apk   ipa   aab   deb   rpm   app   dmg   pkg
+  jar   war   ear   class  bin   dat
+
+Scripts
+-------
+  bat   cmd   ps1   vbs   vba   vbe   wsf   wsh   hta
+  py    pyc   pl    rb    go
+
+Documents
+---------
+  pdf   doc   docx  docm  xls   xlsx  xlsm  ppt   pptx  pptm
+  rtf   odt   ods   odp   odg   csv   txt   log
+
+Web & Code
+----------
+  html  htm   js    css   php   asp   aspx  jsp   cfm
+  xml   json  cfg   ini   inf
+
+Archives
+--------
+  zip   rar   7z    tar   gz    bz2   xz    lz    z     cab   iso
+
+Images
+------
+  jpg   jpeg  png   gif   bmp   svg   ico   webp  tif   tiff
+
+Audio & Video
+-------------
+  mp3   mp4   avi   mov   wmv   mkv   flv   wav   wma
+
+Temp & Backup
+-------------
+  tmp   bak   old
+
+Ransomware-Specific
+-------------------
+  enc   lock  locked  crypt  encrypted  rnsmwr  wnry  wcry
+
+
+Real TLDs are NOT in this list — .com .net .org .io .gov .mil .edu etc.
+all pass through normally. If a file extension is missing and causing
+false positives, add it to BAD_EXTS in index.html.
