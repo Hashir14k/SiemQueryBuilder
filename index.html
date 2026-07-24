@@ -925,9 +925,9 @@ details.bulk-detail .detail-body {
 
     <div id="bulkInputWrapper" class="hidden">
       <div class="upload-area" id="uploadArea">
-        <input type="file" id="iocFileInput" accept=".txt,.csv,text/plain,text/csv">
+        <input type="file" id="iocFileInput" accept=".txt,.csv,.pdf,text/plain,text/csv,application/pdf">
         <label for="iocFileInput" class="upload-label">Browse Files</label>
-        <span class="upload-hint" id="uploadHint">or drag &amp; drop a .txt or .csv file here</span>
+        <span class="upload-hint" id="uploadHint">or drag &amp; drop a .txt, .csv, or .pdf file here</span>
         <span class="file-name hidden" id="fileName"></span>
         <button class="upload-clear hidden" id="uploadClear">Remove</button>
       </div>
@@ -1995,9 +1995,259 @@ details.bulk-detail .detail-body {
     return text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
   }
 
+  async function loadIOCsFromPDF(file) {
+    if (typeof DecompressionStream === 'undefined') {
+      showToast('PDF import requires Chrome 80+, Edge 80+, or Safari 16.4+. Use .txt/.csv instead.');
+      return;
+    }
+    let arrBuf;
+    try { arrBuf = await file.arrayBuffer(); }
+    catch (_) { showToast('Failed to read PDF file'); return; }
+
+    const raw = new Uint8Array(arrBuf);
+    const txt = new TextDecoder('windows-1252').decode(raw);
+
+    const inflate = async function(chunk) {
+      var data = chunk;
+      if (data.length >= 6 && (data[0] & 0x0f) === 8 && ((data[0] << 8) | data[1]) % 31 === 0) {
+        data = data.slice(2, data.length - 4);
+      }
+      var ds = new DecompressionStream('deflate-raw');
+      var w  = ds.writable.getWriter();
+      var r  = ds.readable.getReader();
+      w.write(data); w.close();
+      var parts = [];
+      while (true) { var x = await r.read(); if (x.done) break; parts.push(x.value); }
+      var len = parts.reduce(function(a,b){return a+b.length;}, 0);
+      var out = new Uint8Array(len); var o=0;
+      for (var j = 0; j < parts.length; j++) { out.set(parts[j], o); o += parts[j].length; }
+      return out;
+    };
+
+    const pdfUnescape = function(s) {
+      return s.replace(/\\([()\\nrtf])/g, function(_,c) {
+        return c==='n'?'\n':c==='r'?'\r':c==='t'?'\t':c==='f'?'\f':c;
+      });
+    };
+
+    const extractTextOps = function(data) {
+      var lines = [], m;
+      var tjRe  = /\(((?:[^()\\]|\\.)*)\)\s*Tj/g;
+      while ((m = tjRe.exec(data))) lines.push(pdfUnescape(m[1]));
+      var tjArrRe = /\[([\s\S]*?)\]\s*TJ/g;
+      while ((m = tjArrRe.exec(data))) {
+        var inner = [], im, iRe = /\(((?:[^()\\]|\\.)*)\)/g;
+        while ((im = iRe.exec(m[1]))) inner.push(pdfUnescape(im[1]));
+        if (inner.length) lines.push(inner.join(''));
+      }
+      var sqRe = /\(((?:[^()\\]|\\.)*)\)\s*'/g;
+      while ((m = sqRe.exec(data))) lines.push(pdfUnescape(m[1]));
+      return lines;
+    };
+
+    var cache = Object.create(null);
+    var idx = 0;
+
+    while ((idx = txt.indexOf('endstream', idx)) !== -1) {
+      var searchEnd = idx;
+      while (searchEnd > 0 && txt[searchEnd-1] !== '\n' && txt[searchEnd-1] !== '\r')
+        searchEnd--;
+      var streamPos = txt.lastIndexOf('stream', searchEnd);
+      if (streamPos === -1) { idx += 9; continue; }
+
+      var objSearchStart = Math.max(0, streamPos - 3000);
+      var objSearchChunk = txt.substring(objSearchStart, streamPos);
+      var allObjMatches = [], omRe = /(\d+)\s+0\s+obj/g, omm;
+      while ((omm = omRe.exec(objSearchChunk))) {
+        allObjMatches.push({ num: omm[1], idx: omm.index, len: omm[0].length });
+      }
+      if (allObjMatches.length === 0) { idx += 9; continue; }
+      var bestObj = allObjMatches[allObjMatches.length - 1];
+
+      var afterObj = objSearchStart + bestObj.idx + bestObj.len;
+      var dictStr  = txt.substring(afterObj, streamPos);
+
+      if (dictStr.indexOf('>>') === -1) { idx += 9; continue; }
+
+      var lenM = dictStr.match(/\/Length\s+(\d+)/);
+      if (!lenM) { idx += 9; continue; }
+      var length  = parseInt(lenM[1], 10);
+      var isFlate  = dictStr.indexOf('/FlateDecode') !== -1;
+      var isObjStm = dictStr.indexOf('/ObjStm') !== -1;
+
+      var bodyStart = streamPos;
+      while (bodyStart < txt.length && txt[bodyStart] !== '\n' && txt[bodyStart] !== '\r')
+        bodyStart++;
+      if (txt[bodyStart] === '\r') bodyStart++;
+      if (txt[bodyStart] === '\n') bodyStart++;
+      var bodyEnd = Math.min(bodyStart + length, txt.length);
+
+      try {
+        var chunk  = raw.slice(bodyStart, bodyEnd);
+        var decoded;
+        if (isFlate) {
+          decoded = new TextDecoder().decode(await inflate(chunk));
+        } else {
+          decoded = new TextDecoder().decode(chunk);
+        }
+        cache[bestObj.num] = decoded;
+
+        if (isObjStm) {
+          var nM = dictStr.match(/\/N\s+(\d+)/);
+          var fM = dictStr.match(/\/First\s+(\d+)/);
+          if (nM && fM) {
+            var N = parseInt(nM[1], 10), first = parseInt(fM[1], 10);
+            var header = decoded.substring(0, first);
+            var pairs  = header.match(/(\d+)\s+(\d+)/g);
+            if (pairs) {
+              for (var pi = 0; pi < pairs.length; pi++) {
+                var parts = pairs[pi].split(/\s+/);
+                var on = parseInt(parts[0], 10), off = parseInt(parts[1], 10);
+                var endOff = (pi < pairs.length - 1)
+                  ? parseInt(pairs[pi + 1].split(/\s+/)[1], 10)
+                  : decoded.length;
+                cache[String(on)] = decoded.substring(first + off, first + endOff);
+              }
+            }
+          }
+        }
+      } catch(_) { }
+
+      idx += 9;
+    }
+
+    var cacheKeys = Object.keys(cache);
+    console.log('[PDF] Phase 1: decompressed ' + cacheKeys.length + ' streams');
+
+    if (cacheKeys.length === 0) {
+      var testChunk = new Uint8Array([0x78,0x9c,0xf3,0x48,0xcd,0xc9,0xc9,0x57,0x08,0xcf,0x2f,0xca,0x49,0x51,0x04,0x00,0x1c,0x4a,0x04,0xb9]);
+      try {
+        var testData = testChunk.slice(2, testChunk.length - 4);
+        var testDs = new DecompressionStream('deflate-raw');
+        var testW = testDs.writable.getWriter();
+        var testR = testDs.readable.getReader();
+        testW.write(testData); testW.close();
+        var testParts = [];
+        while (true) { var tv = await testR.read(); if (tv.done) break; testParts.push(tv.value); }
+        var testOut = new TextDecoder().decode(testParts[0] || new Uint8Array(0));
+        if (testOut === 'Hello World') {
+          showToast('PDF: Decompression works but no streams found. PDF may be image-only or encrypted.');
+        } else {
+          showToast('PDF: Decompression produced unexpected result: ' + testOut.substring(0,20));
+        }
+      } catch(e) {
+        showToast('PDF: DecompressionStream error: ' + e.message + '. Try Chrome/Edge instead.');
+      }
+    }
+
+    var allText = [];
+    var pageRe = /(\d+)\s+0\s+obj[\s\S]*?\/Type\s*\/Page[\s\S]*?endobj\s*?/g;
+    var pm;
+    while ((pm = pageRe.exec(txt))) {
+      var pageDict = pm[0];
+      var contArr = pageDict.match(/\/Contents\s*\[([^\]]*)\]/);
+      var contOne = pageDict.match(/\/Contents\s+(\d+)\s+0\s+R/);
+      var refs = [];
+      if (contArr) {
+        var refM, refRe = /(\d+)\s+0\s+R/g;
+        while ((refM = refRe.exec(contArr[1]))) refs.push(refM[1]);
+      } else if (contOne) {
+        refs = [contOne[1]];
+      }
+      for (var ri = 0; ri < refs.length; ri++) {
+        if (cache[refs[ri]]) {
+          allText = allText.concat(extractTextOps(cache[refs[ri]]));
+        }
+      }
+    }
+
+    if (allText.length === 0) {
+      var cacheKeys = Object.keys(cache);
+      for (var ki = 0; ki < cacheKeys.length; ki++) {
+        var lines = extractTextOps(cache[cacheKeys[ki]]);
+        if (lines.length > 0) allText = allText.concat(lines);
+      }
+    }
+
+    if (allText.length === 0) {
+      var cacheKeys2 = Object.keys(cache);
+      for (var ki2 = 0; ki2 < cacheKeys2.length; ki2++) {
+        var words = cache[cacheKeys2[ki2]].match(/[\x20-\x7e]{6,}/g);
+        if (words) allText = allText.concat(words);
+      }
+    }
+
+    var seen   = {};
+    var iocs   = [];
+
+    var refang = function(s) {
+      return s.replace(/\[\.\]/gi, '.').replace(/\(\.\)/gi, '.')
+              .replace(/\[at\]/gi, '@').replace(/\(at\)/gi, '@')
+              .replace(/hxxps?:\/\//gi, 'https://')
+              .replace(/\[:\]\/\//gi, '://');
+    };
+
+    var IOC_RX = /([a-fA-F0-9]{64})|([a-fA-F0-9]{40})|([a-fA-F0-9]{32})|((?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?)|([^\s@]+@[^\s@]+\.[^\s@]+)|((?:https?:\/\/)?[\w.-]+\.[a-z]{2,}(?:\/\S*)?)/gi;
+
+    var DEFANG_RX = /((?:\d{1,3}\[\.\]){3}\d{1,3}(?:\/\d{1,2})?)|([\w.-]+\[\.\][a-z]{2,}(?:\/\S*)?)|([\w.-]+\(\.\)[a-z]{2,}(?:\/\S*)?)|([^\s]+\[at\][^\s]+\.[^\s]+)|([^\s]+\(at\)[^\s]+\.[^\s]+)|(hxxps?:\/\/\S+)|(\S+\[:\]\/\/\S+)/gi;
+
+    var addIOC = function(val) {
+      val = refang(val).trim();
+      if (!val) return;
+      if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(val)) {
+        if (val.split('.').some(function(o){return parseInt(o,10)>255;})) return;
+      }
+      var key = val.toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+      iocs.push(val);
+    };
+
+    for (var li = 0; li < allText.length; li++) {
+      var line = allText[li], m2;
+
+      while ((m2 = DEFANG_RX.exec(line))) {
+        addIOC(m2[0]);
+      }
+      var refangedLine = refang(line);
+      while ((m2 = IOC_RX.exec(refangedLine))) {
+        addIOC(m2[0]);
+      }
+    }
+
+    var cap = iocs.slice(0, 200);
+    iocBulkEl.value = cap.join('\n');
+
+    fileNameEl.textContent = file.name;
+    fileNameEl.classList.remove('hidden');
+    uploadHint.classList.add('hidden');
+    uploadClear.classList.remove('hidden');
+    uploadArea.classList.add('dragover');
+
+    if (currentMode !== 'bulk') {
+      modeTabs.forEach(function(t){t.classList.remove('active');});
+      var bulkTab = document.querySelector('.mode-tab[data-mode="bulk"]');
+      if (bulkTab) bulkTab.classList.add('active');
+      currentMode = 'bulk';
+      singleWrapper.classList.add('hidden');
+      bulkWrapper.classList.remove('hidden');
+      inputCardTitle.innerHTML = 'Add Bulk IOC Values &nbsp;<small style="font-weight:400;font-size:0.7rem;color:var(--text2);">(one per line, max 200)</small>';
+      iocTypeNote.classList.remove('hidden');
+    }
+    render();
+    showToast('Extracted ' + cap.length + ' IOC' + (cap.length !== 1 ? 's' : '') + ' from ' + file.name);
+  }
+
   function loadIOCsFromFile(file) {
     if (!file) return;
-    const isCSV = file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv';
+    const isCSV  = file.name.toLowerCase().endsWith('.csv')  || file.type === 'text/csv';
+    const isPDF  = file.name.toLowerCase().endsWith('.pdf')  || file.type === 'application/pdf';
+
+    if (isPDF) {
+      loadIOCsFromPDF(file);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = function (e) {
       const text = e.target.result;
@@ -2055,11 +2305,11 @@ details.bulk-detail .detail-body {
     e.stopPropagation();
     this.classList.remove('dragover');
     const file = e.dataTransfer.files[0];
-    if (file && (file.name.endsWith('.txt') || file.name.endsWith('.csv') ||
-        file.type === 'text/plain' || file.type === 'text/csv')) {
+    if (file && (file.name.endsWith('.txt') || file.name.endsWith('.csv') || file.name.endsWith('.pdf') ||
+        file.type === 'text/plain' || file.type === 'text/csv' || file.type === 'application/pdf')) {
       loadIOCsFromFile(file);
     } else {
-      showToast('Please drop a .txt or .csv file');
+      showToast('Please drop a .txt, .csv, or .pdf file');
     }
   });
 

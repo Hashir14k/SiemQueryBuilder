@@ -1,5 +1,5 @@
 
-const CACHE = 'siem-qb-v1';
+const CACHE = 'siem-qb-v2';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {

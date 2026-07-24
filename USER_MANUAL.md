@@ -1,6 +1,6 @@
 # SIEM Query Builder — User Manual
 
-> **Version 1.9** | Fully offline · No telemetry · No data leaves your machine
+> **Version 2.0** | Fully offline · No telemetry · No data leaves your machine
 
 ---
 
@@ -11,7 +11,7 @@
 3. [Interface Walkthrough](#interface-walkthrough)
 4. [Single IOC Mode](#single-ioc-mode)
 5. [Bulk IOC Mode](#bulk-ioc-mode)
-6. [File Import (.txt / .csv)](#file-import-txt--csv)
+6. [File Import (.txt / .csv / .pdf)](#file-import-txt--csv--pdf)
 7. [IOC Types & Auto-Detect](#ioc-types--auto-detect)
 8. [SIEM Platforms & Query Syntax](#siem-platforms--query-syntax)
 9. [Cheat Sheet](#cheat-sheet)
@@ -33,7 +33,7 @@ The **SIEM Query Builder** is a browser-based tool that generates native SIEM qu
 - Support for **6 IOC types** with auto-detection
 - **Single IOC** mode for quick lookups
 - **Bulk IOC** mode for hunting at scale (up to 200 IOCs)
-- **File import** from `.txt` and `.csv` files
+- **File import** from `.txt`, `.csv`, and `.pdf` files
 - **Chunked combined queries** for efficient batch hunting
 - **Per-IOC validation** with color-coded feedback
 - **Built-in Cheat Sheet** — search query syntax reference for all 5 SIEM platforms
@@ -173,7 +173,7 @@ IOCs of the same type are batched together using `IN` / `OR` operators:
 
 ---
 
-## File Import (.txt / .csv)
+## File Import (.txt / .csv / .pdf)
 
 Instead of pasting, you can import IOCs directly from a file.
 
@@ -183,15 +183,25 @@ Instead of pasting, you can import IOCs directly from a file.
 |--------|-------------|
 | `.txt` | One IOC per line |
 | `.csv` | Comma-separated — first column used as IOC value |
+| `.pdf` | PDF report — text is extracted and scanned for IOC patterns |
 
 ### CSV Handling:
 - Multi-column CSVs: the tool extracts the **first non-empty value** from each row
 - Values wrapped in quotes (`"192.168.1.100"`) are automatically cleaned
 - Header rows are treated as values — **remove headers before importing** or delete them from the textarea after import
 
+### PDF Handling:
+- **Zero external dependencies** — uses the browser's built-in `DecompressionStream` API
+- Extracts text from PDF content streams (supports FlateDecode compression)
+- Scans extracted text for IOC-like patterns (IPs, domains, emails, hashes)
+- Automatically deduplicates candidates and populates the bulk textarea
+- **Browser support:** Chrome 80+, Edge 80+, Safari 16.4+, Firefox 113+
+- For older browsers, `.txt` and `.csv` import still works normally
+- **Image-based PDFs are not supported.** The tool extracts text from PDF content streams only. PDFs where IOCs are rendered as images, screenshots, or scanned documents cannot be read. For image-based PDFs, use OCR software to convert to text first, then import the resulting `.txt` file.
+
 ### How to Import:
 1. Switch to **Bulk IOCs** mode (or the tool will switch automatically)
-2. **Drag & drop** a `.txt` or `.csv` file onto the upload area
+2. **Drag & drop** a `.txt`, `.csv`, or `.pdf` file onto the upload area
    — OR —
    Click **"Browse Files"** to select a file
 3. IOCs are automatically parsed and populated
@@ -201,7 +211,7 @@ Instead of pasting, you can import IOCs directly from a file.
 ### After Import:
 - You can still **edit** the textarea — add, remove, or fix IOCs
 - Click **"Remove"** to clear the file and start over
-- Max **50 IOCs** are imported (automatically capped)
+- Max **200 IOCs** are imported (automatically capped)
 
 ---
 
@@ -437,7 +447,8 @@ The tool still works perfectly without installation — just open `index.html` d
 | **Queries not appearing** | Check that at least one SIEM platform is selected and the IOC is valid |
 | **"Could not detect IOC type"** | Select the IOC type manually by clicking one of the type chips |
 | **Too many invalid IOCs** | Check for extra spaces, quotes, or non-standard formats in your input |
-| **File won't import** | Ensure it's `.txt` or `.csv` — other formats are not supported |
+| **File won't import** | Ensure it's `.txt`, `.csv`, or `.pdf` — other formats are not supported |
+| **PDF import fails** | PDF may use unsupported compression. Try a different PDF reader to re-export as text, or use `.txt` import instead |
 | **CSV import picks wrong column** | Reorder your CSV so the IOC column is first, or paste directly into the textarea |
 | **Dark mode not saving** | Check that localStorage is not blocked (some private/incognito modes restrict it) |
 | **Copy not working** | Older browsers may not support the Clipboard API — try `Ctrl+C` on the query text instead |

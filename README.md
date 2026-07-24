@@ -1,4 +1,4 @@
-# SIEM Query Builder v1.9
+# SIEM Query Builder v2.0
 
 **Offline SIEM query builder for threat hunters, by a threat hunter.**
 
@@ -7,14 +7,14 @@ A lightweight, browser-based tool that generates native SIEM queries from IOCs �
 ![Platform](https://img.shields.io/badge/platform-web%20%7C%20offline-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![SIEMs](https://img.shields.io/badge/SIEMs-QRadar%20%7C%20Splunk%20%7C%20RSA%20%7C%20Datadog%20%7C%20Wazuh%20%7C%20Sentinel%20%7C%20Elastic-orange)
-![Version](https://img.shields.io/badge/version-1.9-informational)
+![Version](https://img.shields.io/badge/version-2.0-informational)
 ![PWA](https://img.shields.io/badge/PWA-ready-success)
 
 ## Features
 
 - **Single IOC Mode** — Enter one IOC and get formatted queries instantly
 - **Bulk IOC Mode** — Paste up to 200 IOCs (one per line) with auto-deduplication and generate queries in batches
-- **File Import** — Upload .txt or .csv files to auto-import IOCs (drag & drop or browse)
+- **File Import** — Upload .txt, .csv, or .pdf files to auto-import IOCs (drag & drop or browse)
 - **Auto-Detect** — Automatically identifies IPs, domains, emails, SHA-1, SHA-256, and MD5 hashes
 - **Seven SIEM Platforms** — IBM QRadar (AQL), Splunk (SPL), RSA NetWitness, Datadog SIEM, Wazuh, Microsoft Sentinel (KQL), Elastic SIEM
 - **Chunked Combined Queries** — Batch IOCs into `IN` / `OR` grouped queries with configurable chunk sizes
@@ -72,7 +72,7 @@ Serving via HTTP enables the PWA install prompt and service worker caching.
 1. **Select mode** — Single IOC or Bulk IOCs
 2. **Choose IOC type** — or leave on Auto-Detect
 3. **Pick SIEM platforms** — QRadar, Splunk, RSA NetWitness, Datadog SIEM, Wazuh, Sentinel, Elastic (any combination)
-4. **Enter your IOC(s)** — type, paste, or upload a .txt/.csv file — queries generate in real-time
+4. **Enter your IOC(s)** — type, paste, or upload a .txt/.csv/.pdf file — queries generate in real-time
 5. **Copy and hunt** — click Copy buttons or press `Ctrl+Enter` to copy all
 6. **Cheat Sheet** — click the Cheat Sheet button in the header for search query syntax reference
 
