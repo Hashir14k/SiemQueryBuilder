@@ -34,9 +34,11 @@ The **SIEM Query Builder** is a browser-based tool that generates native SIEM qu
 - **Single IOC** mode for quick lookups
 - **Bulk IOC** mode for hunting at scale (up to 200 IOCs)
 - **File import** from `.txt`, `.csv`, and `.pdf` files
+- **Defanged IOC detection** — auto-refangs `[.]` `(.)` `[at]` `(at)` `hxxp://` `[:]//` patterns
+- **File extension filter** — ignores 85+ non-domain extensions (.exe, .dll, .enc, .pdf, .ps1, etc.)
 - **Chunked combined queries** for efficient batch hunting
 - **Per-IOC validation** with color-coded feedback
-- **Built-in Cheat Sheet** — search query syntax reference for all 5 SIEM platforms
+- **Built-in Cheat Sheet** — search query syntax reference for all 7 SIEM platforms
 - **Typewriter heading animation** — "SIEM Query Builder" types itself out on every visit
 - **Dark / Light theme** — full black + green dark mode (default)
 - **PWA support** — installable on desktop and mobile
@@ -91,7 +93,7 @@ The tool is organized into **4 step cards** displayed vertically:
 **Header features:**
 - **Heading** — "SIEM Query Builder" in Consolas font with a typewriter animation on every visit
 - **Dark Mode / Light Mode** — theme toggle button
-- **Cheat Sheet** — opens an in-page search query reference for all 5 SIEM platforms
+- **Cheat Sheet** — opens an in-page search query reference for all 7 SIEM platforms
 
 Queries regenerate **instantly** as you type, select options, or change settings — no "Generate" button needed.
 
@@ -238,6 +240,29 @@ Instead of pasting, you can import IOCs directly from a file.
 - Click any IOC type chip to force a specific type
 - The tool validates all IOCs against the selected type's pattern
 - Invalid IOCs show as **red** in the validation table
+
+### Defanged IOC Detection:
+The tool automatically detects and refangs common defanging patterns used in threat reports. You can paste defanged IOCs directly — no manual cleanup needed.
+
+| Defanged Form | Refanged To | Example Input → Output |
+|---|---|---|
+| `[.]` | `.` | `192[.]168[.]1[.]100` → `192.168.1.100` |
+| `[.]` | `.` | `evil[.]com` → `evil.com` |
+| `(.)` | `.` | `bad(.)org` → `bad.org` |
+| `[at]` | `@` | `attacker[at]evil[.]com` → `attacker@evil.com` |
+| `(at)` | `@` | `phish(at)bad.org` → `phish@bad.org` |
+| `hxxp://` | `https://` | `hxxp://evil[.]com/malware` → `https://evil.com/malware` |
+| `hxxps://` | `https://` | `hxxps://c2[.]attacker[.]com` → `https://c2.attacker.com` |
+| `[:]//` | `://` | `c2[:]//beacon` → `c2://beacon` |
+
+Defanging is detected in all modes: single IOC, bulk paste, and PDF import.
+
+### File Extension Filtering:
+The auto-detect engine ignores **85+ known file extensions** that would otherwise falsely match as domains. Values ending in `.exe`, `.dll`, `.enc`, `.scr`, `.ps1`, `.vba`, `.pdf`, `.docx`, `.zip`, `.locked`, `.rnsmwr`, and many others are flagged as **Unknown** (not Domain).
+
+Real TLDs — `.com`, `.net`, `.org`, `.io`, `.gov`, `.mil`, `.edu` — are never filtered. The complete list is documented in `IGNORED_EXTENSIONS.txt`.
+
+If a valid domain is incorrectly filtered, or a new file extension causes false positives, edit the `BAD_EXTS` object in `index.html`.
 
 ---
 
@@ -448,7 +473,10 @@ The tool still works perfectly without installation — just open `index.html` d
 | **"Could not detect IOC type"** | Select the IOC type manually by clicking one of the type chips |
 | **Too many invalid IOCs** | Check for extra spaces, quotes, or non-standard formats in your input |
 | **File won't import** | Ensure it's `.txt`, `.csv`, or `.pdf` — other formats are not supported |
+| **Safari: Browse Files does nothing** | Hard refresh (`Cmd+Option+R`). Quit and reopen Safari if it persists. The tool uses an opacity-based hidden input pattern that requires a clean page load in Safari. |
 | **PDF import fails** | PDF may use unsupported compression. Try a different PDF reader to re-export as text, or use `.txt` import instead |
+| **PDF shows 0 IOCs** | PDF may contain only images/scans with no embedded text. Use OCR software to convert to `.txt` first. The tool cannot read text from images inside PDFs. |
+| **Domain flagged as Unknown (yellow)** | Value ends in a known file extension — correctly filtered. See `IGNORED_EXTENSIONS.txt` for the full list. If it is a legitimate domain, manually select the Domain IOC type chip to override. |
 | **CSV import picks wrong column** | Reorder your CSV so the IOC column is first, or paste directly into the textarea |
 | **Dark mode not saving** | Check that localStorage is not blocked (some private/incognito modes restrict it) |
 | **Copy not working** | Older browsers may not support the Clipboard API — try `Ctrl+C` on the query text instead |
@@ -464,12 +492,13 @@ The tool still works perfectly without installation — just open `index.html` d
 
 ```
 siem-query-builder/
-├── index.html        # The tool (open this in your browser)
-├── manifest.json     # PWA manifest for installable app
-├── sw.js             # Service worker for offline caching
-├── README.md         # Project overview and feature list
-├── USER_MANUAL.md    # This guide
-├── LICENSE           # MIT License
+├── index.html                  # The tool (open this in your browser)
+├── manifest.json               # PWA manifest for installable app
+├── sw.js                       # Service worker for offline caching
+├── README.md                   # Project overview and feature list
+├── USER_MANUAL.md              # This guide
+├── IGNORED_EXTENSIONS.txt      # Full list of filtered file extensions
+├── LICENSE                     # MIT License
 └── .gitignore
 ```
 
